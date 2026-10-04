@@ -1,11 +1,10 @@
 # AGENTS — Admin Web
 
-Complementa `../../AGENTS.md`.
+Repositorio autónomo del panel administrativo.
 
-- Rol: Frontend Developer.
-- Área normal de escritura: `apps/web/**`.
-- Stack: Angular + TypeScript.
-- API: `../../docs/contracts/openapi/`.
-- No modificar backend, móvil o infraestructura por defecto.
-- No inventar endpoints, payloads ni estados backend.
-- Si falta una capacidad, proponer cambio de contrato y declarar impacto Backend + QA.
+- Stack: Angular 22.1.x + TypeScript 6.0.x.
+- Node.js: 24.21.0 LTS.
+- Contratos REST: `contracts/openapi/`.
+- Pruebas unitarias: Vitest.
+- No inventar endpoints, payloads o estados backend.
+- Si falta una capacidad, proponer cambio en quickpatch-contracts.

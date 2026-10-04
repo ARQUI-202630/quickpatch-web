@@ -1,9 +1,13 @@
 # Claude Code — Admin Web
 
-Aplica `../../CLAUDE.md` y `../../.ai/roles/frontend.md`.
+Lee:
 
-Trabaja normalmente solo en `apps/web/**`.
+- README.md
+- AGENTS.md
+- contracts/openapi/
 
-Stack vigente: Angular + TypeScript.
-Consumir APIs desde `../../docs/contracts/openapi/`.
-No modificar backend ni infraestructura sin instrucción explícita.
+No uses rutas antiguas como:
+
+../../docs/contracts/
+
+Este repositorio funciona de forma autónoma.
