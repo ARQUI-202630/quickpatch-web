@@ -1,6 +1,6 @@
 # QUICKPATCH Admin Web
 
-**Tecnología:** Angular 22.1 + TypeScript 6.0 (Node.js 24.21.0, `.nvmrc`).
+**Tecnología:** Angular 22.2 + TypeScript 6.0 (Node.js 24.21.0, `.nvmrc`).
 
 **Usuarios:** administradores de plataforma/tenant según los roles definidos por el producto.
 
