@@ -1,5 +1,14 @@
 <header class="encabezado">
   <h1>{{ titulo }}</h1>
+  @if (sesion.autenticado()) {
+    <nav>
+      @if (sesion.tieneRol('admin_plataforma')) {
+        <a routerLink="/tenants">Tenants</a>
+      }
+      <span class="usuario">{{ sesion.usuario()?.fullName }}</span>
+      <button type="button" class="secundario" (click)="salir()">Cerrar sesión</button>
+    </nav>
+  }
 </header>
 <main>
   <router-outlet />
