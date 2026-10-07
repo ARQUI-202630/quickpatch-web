@@ -1,6 +1,28 @@
 .encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #e0e0e0;
+  background: #fff;
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #00468c;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.usuario {
+  color: #555;
 }
 
 main {
