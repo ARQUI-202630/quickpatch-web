@@ -4,7 +4,7 @@
 
 **Usuarios:** administradores de plataforma/tenant según los roles definidos por el producto.
 
-La aplicación consume únicamente contratos REST publicados en `contracts/openapi/` (submódulo `quickpatch-contracts`).
+La aplicación consume únicamente contratos REST publicados en `contracts/api-gateway/openapi/` (submódulo `quickpatch-api-gateway`).
 
 ## Estructura
 

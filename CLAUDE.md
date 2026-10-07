@@ -4,7 +4,7 @@ Lee:
 
 - README.md
 - AGENTS.md
-- contracts/openapi/
+- contracts/api-gateway/openapi/
 
 No uses rutas antiguas como:
 
