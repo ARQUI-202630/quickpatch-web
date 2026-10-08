@@ -1,6 +1,6 @@
 # CI/CD de quickpatch-web (panel Angular).
-# El CI vive en este archivo (SCRUM-337). El despliegue (imagen, QA y producción) todavía usa
-# los workflows de quickpatch-infrastructure hasta que se traslade (SCRUM-338). Qué corre en cada rama:
+# El CI (SCRUM-337) y el CD (SCRUM-338) viven en este archivo, sin workflows de otros repositorios.
+# Qué corre en cada rama:
 #   PR a develop        → lint, pruebas y build
 #   push develop        → lo mismo
 #   push release/*      → además, publica el panel en QA (VM2)
@@ -74,23 +74,57 @@ jobs:
           path: ${{ steps.build.outputs.carpeta }}
           retention-days: 7
 
-  qa:
+  # Publica el build del panel (artefacto `panel` del job ci). Corre en el runner self-hosted de VM1:
+  #   release/* → QA: /opt/quickpatch/qa/panel en VM2, por SSH con la llave que deja deploy-runner.yml
+  #   main      → producción: /opt/quickpatch/gateway/panel en VM1, la misma máquina del runner
+  # Nginx monta la carpeta, así que se reemplaza el contenido sin reemplazar la carpeta.
+  # `tar -m` ignora las fechas de los archivos: los relojes de VM1 y VM2 no están sincronizados.
+  # SEGURIDAD: solo con `push`, nunca con `pull_request`: el repo es público.
+  desplegar:
+    name: Panel en ${{ github.ref == 'refs/heads/main' && 'produccion' || 'qa' }}
     needs: ci
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/') && needs.ci.outputs.hay-proyecto == 'true'
-    uses: ARQUI-202630/quickpatch-infrastructure/.github/workflows/deploy-panel.yml@main
-    with:
-      ambiente: qa
+    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main') && needs.ci.outputs.hay-proyecto == 'true'
+    runs-on: [self-hosted, vm1, red-laboratorio]
+    timeout-minutes: 10
+    environment: ${{ github.ref == 'refs/heads/main' && 'produccion' || 'qa' }}
+    concurrency:
+      group: panel-${{ github.ref == 'refs/heads/main' && 'produccion' || 'qa' }}
+      cancel-in-progress: false
+    env:
+      AMBIENTE: ${{ github.ref == 'refs/heads/main' && 'produccion' || 'qa' }}
+      VM2: 10.43.98.15
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: panel
+          path: panel
 
-  produccion:
-    needs: ci
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.ci.outputs.hay-proyecto == 'true'
-    uses: ARQUI-202630/quickpatch-infrastructure/.github/workflows/deploy-panel.yml@main
-    with:
-      ambiente: produccion
+      - name: Publicar
+        run: |
+          case "$AMBIENTE" in
+            produccion)
+              destino=/opt/quickpatch/gateway/panel
+              find "$destino" -mindepth 1 -delete
+              cp -r panel/. "$destino"/
+              ;;
+            qa)
+              destino=/opt/quickpatch/qa/panel
+              tar -C panel -cf - . | ssh -o StrictHostKeyChecking=accept-new "quickpatch@$VM2" \
+                "find $destino -mindepth 1 -delete && tar -m -C $destino -xf -"
+              ;;
+          esac
+          echo "::notice::Panel publicado en $AMBIENTE ($destino)."
 
   dependency-review:
+    name: dependency-review
     if: github.event_name == 'pull_request'
-    uses: ARQUI-202630/quickpatch-infrastructure/.github/workflows/dependency-review.yml@main
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
 
   quality-gate:
     name: quality-gate
