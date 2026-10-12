@@ -103,6 +103,7 @@ jobs:
           case "$AMBIENTE" in
             produccion) destino=/opt/quickpatch/gateway/panel ;;
             qa)         destino=/opt/quickpatch/gateway/panel-qa ;;
+            *)          echo "::error::Ambiente desconocido: $AMBIENTE"; exit 1 ;;
           esac
           find "$destino" -mindepth 1 -delete
           cp -r panel/. "$destino"/
