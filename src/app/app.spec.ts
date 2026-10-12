@@ -105,6 +105,101 @@ describe('App', () => {
     expect(shell.classList).not.toContain('menu-abierto');
   });
 
+  it('el menú deslizable lleva el foco y deja inerte el resto mientras está abierto', async () => {
+    await iniciarSesion('admin_plataforma', 'Laura');
+    const { fixture, el } = renderizar();
+    const abrir = el.querySelector('button.abrir-menu') as HTMLButtonElement;
+    const cerrar = el.querySelector('button.cerrar-menu') as HTMLButtonElement;
+    const area = el.querySelector('.area') as HTMLElement;
+
+    expect(area.inert).toBe(false);
+    abrir.click();
+    await fixture.whenStable();
+    expect(area.inert).toBe(true);
+    expect(document.activeElement).toBe(cerrar);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await fixture.whenStable();
+    expect(area.inert).toBe(false);
+    expect(document.activeElement).toBe(abrir);
+
+    // Escape con el menú cerrado no mueve el foco.
+    cerrar.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(cerrar);
+  });
+
+  it('el botón de menú también cierra el panel si ya está abierto', async () => {
+    await iniciarSesion('admin_plataforma', 'Laura');
+    const { fixture, el } = renderizar();
+    const shell = el.querySelector('.shell') as HTMLElement;
+    const app = fixture.componentInstance as unknown as { alternarMenu(): void };
+
+    app.alternarMenu();
+    fixture.detectChanges();
+    expect(shell.classList).toContain('menu-abierto');
+    app.alternarMenu();
+    fixture.detectChanges();
+    expect(shell.classList).not.toContain('menu-abierto');
+  });
+
+  it('cierra el panel si la ventana se ensancha', async () => {
+    let alCambiar: ((e: Partial<MediaQueryListEvent>) => void) | undefined;
+    const quitar = vi.fn();
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        addEventListener: (_: string, fn: typeof alCambiar) => (alCambiar = fn),
+        removeEventListener: quitar,
+      })),
+    );
+    try {
+      await iniciarSesion('admin_plataforma', 'Laura');
+      const { fixture, el } = renderizar();
+      (el.querySelector('button.abrir-menu') as HTMLButtonElement).click();
+      fixture.detectChanges();
+
+      alCambiar?.({ matches: false });
+      fixture.detectChanges();
+      expect(el.querySelector('.shell')?.classList).toContain('menu-abierto');
+      alCambiar?.({ matches: true });
+      fixture.detectChanges();
+      expect(el.querySelector('.shell')?.classList).not.toContain('menu-abierto');
+
+      fixture.destroy();
+      expect(quitar).toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('al navegar lleva el foco al contenido, salvo en la carga inicial', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [
+        provideRouter([
+          { path: '', children: [] },
+          { path: 'otra', children: [] },
+        ]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    }).compileComponents();
+    const router = TestBed.inject(Router);
+    const { fixture, el } = renderizar();
+    const contenido = el.querySelector('#contenido') as HTMLElement;
+
+    await router.navigateByUrl('/');
+    await fixture.whenStable();
+    expect(document.activeElement).not.toBe(contenido);
+
+    await router.navigateByUrl('/otra');
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(contenido);
+  });
+
   it('un rol sin acceso al panel no muestra enlaces ni nombre de rol', async () => {
     sessionStorage.setItem(
       'quickpatch.sesion',

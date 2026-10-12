@@ -42,7 +42,7 @@ src/styles.scss           Fuente, tokens, base y estilos globales de formularios
 
 - **Usa solo tokens semánticos** (`--qp-color-*`, `--qp-texto-*`, `--qp-espacio-*`, `--qp-radio-*`, `--qp-sombra-*`) en pantallas y componentes. Los primitivos (`--qp-azul-*`, `--qp-neutro-*`) solo se referencian dentro de `_tokens.scss`. No escribas colores en hexadecimal ni tamaños sueltos.
 - **Color:** el azul QUICKPATCH es `#00468c` (`--qp-azul-700`, `--qp-color-primario`). Las escalas están en OKLCH con el mismo tono; los neutros llevan un leve matiz azul.
-- **Contraste (WCAG AA):** `--qp-texto` 17.3:1, `--qp-texto-secundario` 6.5:1 y `--qp-texto-marca` 9.2:1 sobre `--qp-superficie`. Los estados (`--qp-exito`, `--qp-aviso`, `--qp-peligro`) superan 4.5:1 sobre su fondo `-fondo`. `--qp-texto-deshabilitado` es solo para controles deshabilitados.
+- **Contraste (WCAG AA):** `--qp-texto` 17.3:1, `--qp-texto-secundario` 6.5:1 y `--qp-texto-marca` 9.2:1 sobre `--qp-superficie`. Los estados (`--qp-exito`, `--qp-aviso`, `--qp-peligro`) superan 4.5:1 sobre su fondo `-fondo`. El borde de los campos (`--qp-borde-fuerte`) y el anillo de foco superan 3:1. `--qp-texto-deshabilitado` es solo para controles deshabilitados. `src/styles/contraste.spec.ts` calcula estos contrastes desde `_tokens.scss`, así que un cambio de paleta que los baje rompe el CI.
 - **Tipografía:** Plus Jakarta Sans Variable (`@fontsource-variable/plus-jakarta-sans`, OFL-1.1), autoalojada en el bundle, sin CDN. Escala: `xs` 12, `sm` 14 (tablas, etiquetas y botones), `md` 16 (cuerpo), `lg` 18, `xl` 22 (título de página) y `2xl` 28 px. Las tablas usan cifras tabulares.
 - **Espaciado:** escala de 4 px (`--qp-espacio-1` = 4 px … `--qp-espacio-12` = 48 px). Los controles miden al menos `--qp-alto-control` (40 px).
 - **Movimiento:** `--qp-curva-salida` con `--qp-duracion-rapida` (120 ms) para hover y presión, y `--qp-duracion-media` (200 ms) para menús y diálogos. Con `prefers-reduced-motion` las duraciones son 0.
@@ -55,6 +55,15 @@ src/styles.scss           Fuente, tokens, base y estilos globales de formularios
   - `app-tarjeta-detalle` (`titulo`, `subtitulo`, `datos`, ranuras `[estado]` y `[acciones]`): detalle de una entidad, como el técnico en SCRUM-39.
   - Patrones de página en `styles.scss`: `.pagina`, `.encabezado-pagina`, `.alerta`, `.vacio`, `.esqueleto` y `button.peligro`.
 - **Estados de componentes:** todo control interactivo define hover, foco visible (`--qp-foco`), deshabilitado y, si aplica, cargando, vacío y error.
+
+## Accesibilidad
+
+Objetivo: WCAG 2.2 AA (SCRUM-438).
+
+- **Teclado y foco:** «Saltar al contenido» es el primer enlace. Al cambiar de ruta el foco pasa al contenido (`#contenido`). El panel deslizable lleva el foco a «Cerrar menú», deja inerte el resto de la página y al cerrarse (botón, velo o Escape) devuelve el foco a «Abrir menú». El diálogo de confirmación abre con el foco en «Cancelar» y se cierra con Escape.
+- **Formularios:** cada campo tiene etiqueta; los errores se enlazan con `aria-describedby` y marcan `aria-invalid`. Los errores del servidor usan `role="alert"` y las cargas `role="status"`.
+- **Pruebas automáticas:** `src/app/accesibilidad.spec.ts` pasa axe-core (reglas WCAG 2.x A y AA) por cada pantalla y estado: inicio de sesión con errores, inicio, tenants cargando, con datos, vacío y sin resultados, diálogo con error y shell con el menú abierto. El contraste lo cubre `contraste.spec.ts`, porque jsdom no calcula estilos.
+- **Pendiente manual:** revisar con lector de pantalla (NVDA o VoiceOver) y zoom al 200 % antes de cada entrega.
 
 ## Comandos
 

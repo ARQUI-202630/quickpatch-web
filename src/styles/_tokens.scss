@@ -41,7 +41,7 @@
   --qp-verde-50: oklch(0.96 0.03 150);
   --qp-verde-700: oklch(0.5 0.12 150);
   --qp-ambar-50: oklch(0.96 0.04 85);
-  --qp-ambar-700: oklch(0.55 0.118 70);
+  --qp-ambar-700: oklch(0.52 0.112 70);
   --qp-rojo-50: oklch(0.96 0.019 20);
   --qp-rojo-700: oklch(0.5 0.17 25);
 
@@ -51,7 +51,8 @@
   --qp-superficie-sutil: var(--qp-neutro-25); /* filas alternas, cabeceras de tabla */
   --qp-superficie-hover: var(--qp-azul-50); /* fila o ítem bajo el cursor */
   --qp-borde: var(--qp-neutro-200);
-  --qp-borde-fuerte: var(--qp-neutro-300); /* campos de formulario */
+  --qp-borde-fuerte: var(--qp-neutro-500); /* borde de campos, 4.3:1 (WCAG 1.4.11 pide 3:1) */
+  --qp-borde-fuerte-hover: var(--qp-neutro-700);
 
   /* ── Semánticos: texto (contraste sobre --qp-superficie) ─────────────────── */
   --qp-texto: var(--qp-neutro-900); /* 17.3:1 */

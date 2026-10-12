@@ -7,6 +7,7 @@
         <span class="sello" aria-hidden="true">Q</span>
         <h1>QUICKPATCH <span>Panel administrativo</span></h1>
         <button
+          #botonCerrar
           type="button"
           class="boton-icono cerrar-menu"
           aria-label="Cerrar menú"
@@ -35,9 +36,10 @@
     </aside>
     <div class="velo" aria-hidden="true" (click)="cerrarMenu()"></div>
 
-    <div class="area">
+    <div class="area" [inert]="menuAbierto()">
       <header class="encabezado">
         <button
+          #botonAbrir
           type="button"
           class="boton-icono abrir-menu"
           aria-label="Abrir menú"
