@@ -106,18 +106,6 @@ $angosto: 56rem;
   padding: var(--qp-espacio-3) var(--qp-espacio-6);
   border-bottom: 1px solid var(--qp-borde);
   background: var(--qp-superficie);
-
-  &.publico {
-    justify-content: flex-start;
-
-    .marca h1 {
-      color: var(--qp-texto-marca);
-
-      span {
-        color: var(--qp-texto-secundario);
-      }
-    }
-  }
 }
 
 .usuario {
@@ -171,6 +159,10 @@ main {
 
   &:focus {
     outline: none;
+  }
+
+  &.publico {
+    padding: 0;
   }
 }
 

@@ -39,13 +39,14 @@ describe('App', () => {
     }).compileComponents();
   });
 
-  it('muestra el título del panel sin menú cuando no hay sesión', async () => {
+  it('sin sesión muestra solo el contenido público, sin barra lateral', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const elemento = fixture.nativeElement as HTMLElement;
 
-    expect(elemento.querySelector('h1')?.textContent).toContain('Panel administrativo');
+    expect(elemento.querySelector('.shell')).toBeNull();
     expect(elemento.querySelector('nav')).toBeNull();
+    expect(elemento.querySelector('main.publico')).not.toBeNull();
     expect(elemento.querySelector('a.saltar')?.getAttribute('href')).toBe('#contenido');
   });
 

@@ -234,3 +234,103 @@ tbody tr {
     background: var(--qp-superficie-hover);
   }
 }
+
+/* ── Patrones de página (SCRUM-436) ───────────────────────────────────────── */
+.pagina {
+  display: grid;
+  gap: var(--qp-espacio-6);
+  max-width: var(--qp-ancho-contenido);
+  margin: 0 auto;
+}
+
+.pagina > .tarjeta {
+  max-width: none;
+  margin: 0;
+}
+
+.encabezado-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--qp-espacio-4);
+
+  h2 {
+    margin-bottom: var(--qp-espacio-1);
+  }
+
+  p {
+    margin: 0;
+    color: var(--qp-texto-secundario);
+  }
+}
+
+button.peligro {
+  background: var(--qp-peligro);
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    background: color-mix(in oklch, var(--qp-peligro), black 15%);
+  }
+}
+
+button.secundario.peligro {
+  background: var(--qp-peligro-fondo);
+  color: var(--qp-peligro);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--qp-peligro-fondo), var(--qp-peligro) 10%);
+  }
+}
+
+.alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qp-espacio-3);
+  margin: 0;
+  padding: var(--qp-espacio-3) var(--qp-espacio-4);
+  border: 1px solid currentColor;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-peligro-fondo);
+  color: var(--qp-peligro);
+  font-size: var(--qp-texto-sm);
+}
+
+.vacio {
+  display: grid;
+  justify-items: center;
+  gap: var(--qp-espacio-2);
+  padding: var(--qp-espacio-10) var(--qp-espacio-4);
+  color: var(--qp-texto-secundario);
+  text-align: center;
+
+  strong {
+    color: var(--qp-texto);
+  }
+}
+
+.esqueleto {
+  display: block;
+  height: 0.875rem;
+  border-radius: var(--qp-radio-sm);
+  background: linear-gradient(
+      90deg,
+      var(--qp-neutro-100) 0%,
+      var(--qp-neutro-50) 50%,
+      var(--qp-neutro-100) 100%
+    )
+    0 0 / 200% 100%;
+  animation: qp-brillo 1.4s ease-in-out infinite;
+}
+
+@keyframes qp-brillo {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto {
+    animation: none;
+  }
+}
