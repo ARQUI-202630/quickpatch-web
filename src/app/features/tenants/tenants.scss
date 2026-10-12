@@ -1,0 +1,107 @@
+/* Gestión de tenants (SCRUM-436). Por debajo de 40rem cada fila se apila como una ficha. */
+.resumen {
+  display: flex;
+  gap: var(--qp-espacio-4);
+  font-size: var(--qp-texto-sm);
+
+  strong {
+    color: var(--qp-texto);
+  }
+}
+
+.contenedor-tabla {
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+th:first-child,
+td:first-child {
+  padding-left: var(--qp-espacio-6);
+}
+
+th:last-child,
+td:last-child {
+  padding-right: var(--qp-espacio-6);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.nombre {
+  font-weight: var(--qp-peso-semibold);
+}
+
+.acciones {
+  text-align: right;
+}
+
+.confirmacion {
+  justify-content: flex-end;
+}
+
+.fila-esqueleto:hover {
+  background: none;
+}
+
+.ancho-sm {
+  width: 4rem;
+}
+
+.ancho-md {
+  width: 6rem;
+}
+
+.ancho-lg {
+  width: 10rem;
+}
+
+@media (max-width: 40rem) {
+  thead {
+    display: none;
+  }
+
+  table,
+  tbody,
+  tr {
+    display: block;
+  }
+
+  tbody tr {
+    display: grid;
+    gap: var(--qp-espacio-2);
+    padding: var(--qp-espacio-4);
+    border-bottom: 1px solid var(--qp-borde);
+  }
+
+  tbody td,
+  tbody td:first-child,
+  tbody td:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qp-espacio-4);
+    padding: 0;
+    border: none;
+  }
+
+  td[data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    color: var(--qp-texto-secundario);
+    font-weight: var(--qp-peso-normal);
+  }
+
+  .acciones {
+    justify-content: flex-start;
+    padding-top: var(--qp-espacio-2);
+  }
+
+  .confirmacion {
+    justify-content: flex-start;
+  }
+
+  .fila-esqueleto td:empty {
+    display: none;
+  }
+}

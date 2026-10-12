@@ -1,0 +1,113 @@
+/* Inicio de sesión (SCRUM-436): presentación de marca a la izquierda y formulario a la derecha. */
+:host {
+  display: block;
+}
+
+.acceso {
+  display: grid;
+  grid-template-columns: minmax(20rem, 5fr) 7fr;
+  min-height: 100dvh;
+}
+
+.presentacion {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--qp-espacio-10);
+  padding: var(--qp-espacio-10);
+  background: var(--qp-lateral-fondo);
+  color: var(--qp-lateral-texto);
+
+  .marca h1 span,
+  .pie,
+  dd {
+    color: var(--qp-lateral-texto-secundario);
+  }
+
+  .sello {
+    background: var(--qp-lateral-activo);
+  }
+}
+
+.mensaje {
+  max-width: 28rem;
+}
+
+.destacado {
+  margin-bottom: var(--qp-espacio-8);
+  font-size: var(--qp-texto-2xl);
+  font-weight: var(--qp-peso-bold);
+  letter-spacing: var(--qp-tracking-titulo);
+  line-height: var(--qp-interlineado-titulo);
+  text-wrap: balance;
+}
+
+dl {
+  display: grid;
+  gap: var(--qp-espacio-1);
+  margin: 0;
+}
+
+dt {
+  font-weight: var(--qp-peso-semibold);
+}
+
+dd {
+  margin: 0 0 var(--qp-espacio-4);
+  font-size: var(--qp-texto-sm);
+}
+
+.pie {
+  margin: 0;
+  font-size: var(--qp-texto-sm);
+}
+
+.formulario {
+  display: grid;
+  place-items: center;
+  padding: var(--qp-espacio-10) var(--qp-espacio-6);
+}
+
+.caja {
+  width: min(100%, 24rem);
+
+  > .nota {
+    margin-bottom: var(--qp-espacio-6);
+  }
+}
+
+form {
+  gap: var(--qp-espacio-4);
+  max-width: none;
+}
+
+.campo {
+  display: grid;
+  gap: var(--qp-espacio-2);
+}
+
+button[type='submit'] {
+  width: 100%;
+  margin-top: var(--qp-espacio-2);
+}
+
+@media (max-width: 56rem) {
+  .acceso {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .presentacion {
+    padding: var(--qp-espacio-4);
+  }
+
+  .mensaje,
+  .pie {
+    display: none;
+  }
+
+  .formulario {
+    align-items: start;
+    padding: var(--qp-espacio-8) var(--qp-espacio-4);
+  }
+}

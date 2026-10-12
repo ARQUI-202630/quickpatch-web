@@ -125,9 +125,68 @@ describe('features', () => {
 
       expect(texto(fixture.nativeElement as HTMLElement)).toContain('No tienes permiso');
     });
+
+    it('muestra filas de carga y luego el resumen de activos e inactivos', async () => {
+      const fixture = TestBed.createComponent(Tenants);
+      fixture.detectChanges();
+      const pagina = fixture.nativeElement as HTMLElement;
+
+      expect(pagina.querySelectorAll('tr.fila-esqueleto').length).toBe(3);
+      expect(pagina.querySelector('table')?.getAttribute('aria-busy')).toBe('true');
+      expect(pagina.querySelector('[role="status"]')?.textContent).toContain('Cargando tenants');
+
+      http.expectOne('/api/v1/platform/tenants').flush(tenants);
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(pagina.querySelectorAll('tr.fila-esqueleto').length).toBe(0);
+      expect(pagina.querySelector('table')?.getAttribute('aria-busy')).toBe('false');
+      const resumen = Array.from(pagina.querySelectorAll('.resumen > span')).map((s) =>
+        texto(s as HTMLElement)
+          .replace(/\s+/g, ' ')
+          .trim(),
+      );
+      expect(resumen).toEqual(['1 activo', '1 inactivo']);
+    });
+
+    it('marca como peligrosa la desactivación y su confirmación', async () => {
+      const fixture = await crear();
+      const tabla = fixture.nativeElement as HTMLElement;
+
+      expect(botones(tabla, 'Desactivar')[0].classList).toContain('peligro');
+      expect(botones(tabla, 'Activar')[0].classList).not.toContain('peligro');
+
+      botones(tabla, 'Desactivar')[0].click();
+      fixture.detectChanges();
+      expect(botones(tabla, 'Confirmar')[0].classList).toContain('peligro');
+    });
+
+    it('sin tenants muestra el estado vacío y no el resumen', async () => {
+      const fixture = TestBed.createComponent(Tenants);
+      fixture.detectChanges();
+      http.expectOne('/api/v1/platform/tenants').flush([]);
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const pagina = fixture.nativeElement as HTMLElement;
+
+      expect(texto(pagina.querySelector('.vacio') as HTMLElement)).toContain(
+        'No hay tenants registrados.',
+      );
+      expect(pagina.querySelector('.resumen')).toBeNull();
+    });
   });
 
   describe('InicioSesion', () => {
+    it('presenta la marca y el título del panel', () => {
+      const fixture = TestBed.createComponent(InicioSesion);
+      fixture.detectChanges();
+      const pagina = fixture.nativeElement as HTMLElement;
+
+      expect(pagina.querySelector('h1')?.textContent).toContain('Panel administrativo');
+      expect(pagina.querySelector('h2')?.textContent).toContain('Iniciar sesión');
+      expect(pagina.querySelector('#email')?.hasAttribute('aria-invalid')).toBe(false);
+    });
+
     it('valida antes de enviar', async () => {
       const fixture = TestBed.createComponent(InicioSesion);
       fixture.detectChanges();
@@ -138,6 +197,9 @@ describe('features', () => {
 
       expect(texto(pagina)).toContain('Escribe un correo válido.');
       expect(texto(pagina)).toContain('Escribe tu contraseña.');
+      expect(pagina.querySelector('#email')?.getAttribute('aria-invalid')).toBe('true');
+      expect(pagina.querySelector('#email')?.getAttribute('aria-describedby')).toBe('email-error');
+      expect(pagina.querySelector('#password')?.getAttribute('aria-invalid')).toBe('true');
     });
 
     it('entra y lleva al administrador de la plataforma a los tenants', async () => {
@@ -211,5 +273,9 @@ describe('features', () => {
     fixture.detectChanges();
 
     expect(texto(fixture.nativeElement as HTMLElement)).toContain('Hola, Ana Admin');
+    const capacidades = fixture.nativeElement.querySelectorAll('.capacidades li');
+    expect(capacidades.length).toBe(3);
+    expect(texto(capacidades[0] as HTMLElement)).toContain('Técnicos');
+    expect(texto(capacidades[0] as HTMLElement)).toContain('Próximamente');
   });
 });

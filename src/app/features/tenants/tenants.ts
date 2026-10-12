@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { mensajeDeError } from '../../core/http';
@@ -17,17 +17,37 @@ interface CambioPendiente {
 @Component({
   selector: 'app-tenants',
   imports: [DatePipe],
+  styleUrl: './tenants.scss',
   template: `
-    <section class="tarjeta">
-      <h2>Tenants</h2>
+    <div class="pagina">
+      <header class="encabezado-pagina">
+        <div>
+          <h2>Tenants</h2>
+          <p>
+            Empresas oferentes de la plataforma. Un tenant inactivo no puede registrar usuarios ni
+            iniciar sesión.
+          </p>
+        </div>
+        @if (!cargando() && tenants().length > 0) {
+          <p class="resumen numerico">
+            <span
+              ><strong>{{ activos() }}</strong> {{ activos() === 1 ? 'activo' : 'activos' }}</span
+            >
+            <span
+              ><strong>{{ inactivos() }}</strong>
+              {{ inactivos() === 1 ? 'inactivo' : 'inactivos' }}</span
+            >
+          </p>
+        }
+      </header>
+
       @if (error()) {
-        <p class="error" role="alert">{{ error() }}</p>
+        <p class="alerta" role="alert">{{ error() }}</p>
       }
-      @if (cargando()) {
-        <p>Cargando…</p>
-      } @else {
-        <table>
-          <caption>
+
+      <section class="tarjeta contenedor-tabla">
+        <table [attr.aria-busy]="cargando()">
+          <caption class="oculto">
             Empresas oferentes de la plataforma
           </caption>
           <thead>
@@ -40,44 +60,84 @@ interface CambioPendiente {
             </tr>
           </thead>
           <tbody>
-            @for (t of tenants(); track t.id) {
-              <tr>
-                <td>{{ t.name }}</td>
-                <td>{{ t.nit }}</td>
-                <td>
-                  <span class="estado" [class.inactivo]="t.status === 'inactivo'">{{
-                    t.status === 'activo' ? 'Activo' : 'Inactivo'
-                  }}</span>
-                </td>
-                <td>{{ t.createdAt | date: 'dd/MM/yyyy' }}</td>
-                <td>
-                  @if (pendiente()?.tenant?.id === t.id) {
-                    <span class="confirmacion">
-                      ¿{{ pendiente()?.nuevo === 'activo' ? 'Activar' : 'Desactivar' }}
-                      {{ t.name }}?
-                      <button type="button" (click)="confirmar()" [disabled]="guardando()">
-                        Confirmar
+            @if (cargando()) {
+              @for (fila of filasEsqueleto; track fila) {
+                <tr class="fila-esqueleto" aria-hidden="true">
+                  <td><span class="esqueleto ancho-lg"></span></td>
+                  <td><span class="esqueleto ancho-md"></span></td>
+                  <td><span class="esqueleto ancho-sm"></span></td>
+                  <td><span class="esqueleto ancho-md"></span></td>
+                  <td></td>
+                </tr>
+              }
+            } @else {
+              @for (t of tenants(); track t.id) {
+                <tr>
+                  <td class="nombre" data-etiqueta="Nombre">{{ t.name }}</td>
+                  <td data-etiqueta="NIT">{{ t.nit }}</td>
+                  <td data-etiqueta="Estado">
+                    <span class="estado" [class.inactivo]="t.status === 'inactivo'">{{
+                      t.status === 'activo' ? 'Activo' : 'Inactivo'
+                    }}</span>
+                  </td>
+                  <td data-etiqueta="Creado">
+                    <time [attr.datetime]="t.createdAt">{{
+                      t.createdAt | date: 'dd/MM/yyyy'
+                    }}</time>
+                  </td>
+                  <td class="acciones">
+                    @if (pendiente()?.tenant?.id === t.id) {
+                      <span
+                        class="confirmacion"
+                        role="group"
+                        [attr.aria-label]="'Confirmar cambio de ' + t.name"
+                      >
+                        <span>
+                          ¿{{ pendiente()?.nuevo === 'activo' ? 'Activar' : 'Desactivar' }}
+                          {{ t.name }}?
+                        </span>
+                        <button
+                          type="button"
+                          [class.peligro]="pendiente()?.nuevo === 'inactivo'"
+                          (click)="confirmar()"
+                          [disabled]="guardando()"
+                        >
+                          Confirmar
+                        </button>
+                        <button type="button" class="secundario" (click)="pendiente.set(null)">
+                          Cancelar
+                        </button>
+                      </span>
+                    } @else {
+                      <button
+                        type="button"
+                        class="secundario"
+                        [class.peligro]="t.status === 'activo'"
+                        (click)="pedirCambio(t)"
+                      >
+                        {{ t.status === 'activo' ? 'Desactivar' : 'Activar' }}
                       </button>
-                      <button type="button" class="secundario" (click)="pendiente.set(null)">
-                        Cancelar
-                      </button>
-                    </span>
-                  } @else {
-                    <button type="button" class="secundario" (click)="pedirCambio(t)">
-                      {{ t.status === 'activo' ? 'Desactivar' : 'Activar' }}
-                    </button>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5">No hay tenants registrados.</td>
-              </tr>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5">
+                    <div class="vacio">
+                      <strong>No hay tenants registrados.</strong>
+                      <span>Las empresas oferentes aparecerán aquí cuando se registren.</span>
+                    </div>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
-      }
-    </section>
+        @if (cargando()) {
+          <p class="oculto" role="status">Cargando tenants…</p>
+        }
+      </section>
+    </div>
   `,
 })
 export class Tenants implements OnInit {
@@ -88,6 +148,11 @@ export class Tenants implements OnInit {
   protected readonly guardando = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly pendiente = signal<CambioPendiente | null>(null);
+  protected readonly activos = computed(
+    () => this.tenants().filter((t) => t.status === 'activo').length,
+  );
+  protected readonly inactivos = computed(() => this.tenants().length - this.activos());
+  protected readonly filasEsqueleto = [1, 2, 3];
 
   async ngOnInit(): Promise<void> {
     try {
