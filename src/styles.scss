@@ -168,3 +168,69 @@ tbody tr {
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+
+/* ── Piezas del shell reutilizables (SCRUM-435) ──────────────────────────── */
+.saltar {
+  position: absolute;
+  top: var(--qp-espacio-2);
+  left: var(--qp-espacio-2);
+  z-index: 50;
+  padding: var(--qp-espacio-2) var(--qp-espacio-4);
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-superficie);
+  box-shadow: var(--qp-sombra-md);
+  font-weight: var(--qp-peso-semibold);
+  transform: translateY(-200%);
+
+  &:focus-visible {
+    transform: none;
+  }
+}
+
+/* ── Marca ─────────────────────────────────────────────────────────────────── */
+.marca {
+  display: flex;
+  align-items: center;
+  gap: var(--qp-espacio-3);
+
+  h1 {
+    display: grid;
+    margin: 0;
+    font-size: var(--qp-texto-md);
+    font-weight: var(--qp-peso-bold);
+    letter-spacing: 0.02em;
+    line-height: var(--qp-interlineado-titulo);
+
+    span {
+      font-size: var(--qp-texto-xs);
+      font-weight: var(--qp-peso-medio);
+      letter-spacing: 0;
+    }
+  }
+}
+
+.sello {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-color-primario);
+  color: var(--qp-texto-sobre-primario);
+  font-size: var(--qp-texto-lg);
+  font-weight: var(--qp-peso-bold);
+}
+
+/* ── Botón solo con icono ─────────────────────────────────────────────────── */
+.boton-icono {
+  display: inline-grid;
+  place-items: center;
+  width: var(--qp-alto-control);
+  padding: 0;
+  background: transparent;
+  color: inherit;
+
+  &:hover:not(:disabled) {
+    background: var(--qp-superficie-hover);
+  }
+}

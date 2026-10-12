@@ -1,15 +1,77 @@
-<header class="encabezado">
-  <h1>{{ titulo }}</h1>
-  @if (sesion.autenticado()) {
-    <nav>
-      @if (sesion.tieneRol('admin_plataforma')) {
-        <a routerLink="/tenants">Tenants</a>
-      }
-      <span class="usuario">{{ sesion.usuario()?.fullName }}</span>
-      <button type="button" class="secundario" (click)="salir()">Cerrar sesión</button>
-    </nav>
-  }
-</header>
-<main>
-  <router-outlet />
-</main>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+@if (sesion.autenticado()) {
+  <div class="shell" [class.menu-abierto]="menuAbierto()">
+    <aside class="barra-lateral" id="barra-lateral">
+      <div class="marca">
+        <span class="sello" aria-hidden="true">Q</span>
+        <h1>QUICKPATCH <span>Panel administrativo</span></h1>
+        <button
+          type="button"
+          class="boton-icono cerrar-menu"
+          aria-label="Cerrar menú"
+          (click)="cerrarMenu()"
+        >
+          <app-icono nombre="cerrar" />
+        </button>
+      </div>
+      <nav aria-label="Navegación principal">
+        <ul>
+          @for (enlace of enlaces(); track enlace.ruta) {
+            <li>
+              <a
+                [routerLink]="enlace.ruta"
+                routerLinkActive="activo"
+                ariaCurrentWhenActive="page"
+                (click)="cerrarMenu()"
+              >
+                <app-icono [nombre]="enlace.icono" />
+                {{ enlace.etiqueta }}
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+    </aside>
+    <div class="velo" aria-hidden="true" (click)="cerrarMenu()"></div>
+
+    <div class="area">
+      <header class="encabezado">
+        <button
+          type="button"
+          class="boton-icono abrir-menu"
+          aria-label="Abrir menú"
+          aria-controls="barra-lateral"
+          [attr.aria-expanded]="menuAbierto()"
+          (click)="alternarMenu()"
+        >
+          <app-icono nombre="menu" />
+        </button>
+        <div class="usuario">
+          <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
+          <span class="datos">
+            <span class="nombre">{{ sesion.usuario()?.fullName }}</span>
+            <span class="rol">{{ nombreRol() }}</span>
+          </span>
+        </div>
+        <button type="button" class="secundario salir" (click)="salir()">
+          <app-icono nombre="salir" [tamano]="18" />
+          Cerrar sesión
+        </button>
+      </header>
+      <main id="contenido" tabindex="-1">
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+} @else {
+  <header class="encabezado publico">
+    <div class="marca">
+      <span class="sello" aria-hidden="true">Q</span>
+      <h1>QUICKPATCH <span>Panel administrativo</span></h1>
+    </div>
+  </header>
+  <main id="contenido" tabindex="-1">
+    <router-outlet />
+  </main>
+}

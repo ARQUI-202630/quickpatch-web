@@ -46,6 +46,7 @@ src/styles.scss           Fuente, tokens, base y estilos globales de formularios
 - **Tipografía:** Plus Jakarta Sans Variable (`@fontsource-variable/plus-jakarta-sans`, OFL-1.1), autoalojada en el bundle, sin CDN. Escala: `xs` 12, `sm` 14 (tablas, etiquetas y botones), `md` 16 (cuerpo), `lg` 18, `xl` 22 (título de página) y `2xl` 28 px. Las tablas usan cifras tabulares.
 - **Espaciado:** escala de 4 px (`--qp-espacio-1` = 4 px … `--qp-espacio-12` = 48 px). Los controles miden al menos `--qp-alto-control` (40 px).
 - **Movimiento:** `--qp-curva-salida` con `--qp-duracion-rapida` (120 ms) para hover y presión, y `--qp-duracion-media` (200 ms) para menús y diálogos. Con `prefers-reduced-motion` las duraciones son 0.
+- **Shell (SCRUM-435):** con sesión, barra lateral azul (`--qp-lateral-*`) con la navegación por rol y encabezado con el usuario; por debajo de 56rem la barra es un panel deslizable (botón de menú, velo y Escape). Iconos en `shared/icono.ts` (SVG propio, trazo 1.75 px). Las rutas definen el título del documento.
 - **Estados de componentes:** todo control interactivo define hover, foco visible (`--qp-foco`), deshabilitado y, si aplica, cargando, vacío y error.
 
 ## Comandos

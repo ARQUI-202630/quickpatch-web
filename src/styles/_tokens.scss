@@ -69,6 +69,14 @@
   --qp-foco: var(--qp-azul-500); /* anillo de foco visible */
   --qp-seleccion: var(--qp-azul-200);
 
+  /* ── Semánticos: barra lateral (superficie de marca) ─────────────────────── */
+  --qp-lateral-fondo: var(--qp-azul-900);
+  --qp-lateral-texto: var(--qp-neutro-0); /* 15.6:1 */
+  --qp-lateral-texto-secundario: var(--qp-azul-200); /* 11.2:1 */
+  --qp-lateral-hover: var(--qp-azul-800);
+  --qp-lateral-activo: var(--qp-azul-700);
+  --qp-velo: oklch(0.2 0.05 254.9 / 45%); /* fondo detrás de paneles deslizables */
+
   /* ── Semánticos: estados (texto 700 sobre fondo 50, ≥ 4.5:1) ─────────────── */
   --qp-exito: var(--qp-verde-700);
   --qp-exito-fondo: var(--qp-verde-50);
