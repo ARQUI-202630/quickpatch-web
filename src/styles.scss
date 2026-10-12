@@ -125,28 +125,6 @@ tbody tr {
   }
 }
 
-.estado {
-  display: inline-block;
-  padding: var(--qp-espacio-1) var(--qp-espacio-3);
-  border-radius: var(--qp-radio-pildora);
-  background: var(--qp-exito-fondo);
-  color: var(--qp-exito);
-  font-size: var(--qp-texto-xs);
-  font-weight: var(--qp-peso-semibold);
-
-  &.inactivo {
-    background: var(--qp-peligro-fondo);
-    color: var(--qp-peligro);
-  }
-}
-
-.confirmacion {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--qp-espacio-2);
-}
-
 .error,
 .error-campo {
   color: var(--qp-peligro);

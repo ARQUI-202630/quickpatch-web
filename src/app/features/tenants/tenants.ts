@@ -3,6 +3,9 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { mensajeDeError } from '../../core/http';
+import { CampoBusqueda, coincide } from '../../shared/campo-busqueda';
+import { DialogoConfirmacion } from '../../shared/dialogo-confirmacion';
+import { Insignia } from '../../shared/insignia';
 import { EstadoTenant, Tenant, TenantsApi } from './tenants-api';
 
 interface CambioPendiente {
@@ -11,12 +14,13 @@ interface CambioPendiente {
 }
 
 /**
- * Gestión de tenants (RF-21, SCRUM-41): lista todos los tenants y permite activarlos o desactivarlos con una
- * confirmación. Un tenant inactivo no puede registrar usuarios ni iniciar sesión (RN-T1).
+ * Gestión de tenants (RF-21, SCRUM-41): lista todos los tenants, los filtra por nombre o NIT sobre la lista ya
+ * cargada y permite activarlos o desactivarlos con un diálogo de confirmación. Un tenant inactivo no puede registrar
+ * usuarios ni iniciar sesión (RN-T1).
  */
 @Component({
   selector: 'app-tenants',
-  imports: [DatePipe],
+  imports: [DatePipe, CampoBusqueda, DialogoConfirmacion, Insignia],
   styleUrl: './tenants.scss',
   template: `
     <div class="pagina">
@@ -41,11 +45,20 @@ interface CambioPendiente {
         }
       </header>
 
-      @if (error()) {
+      @if (error() && !pendiente()) {
         <p class="alerta" role="alert">{{ error() }}</p>
       }
 
       <section class="tarjeta contenedor-tabla">
+        @if (!cargando() && tenants().length > 0) {
+          <div class="herramientas">
+            <app-campo-busqueda
+              etiqueta="Buscar tenants por nombre o NIT"
+              placeholder="Buscar por nombre o NIT"
+              [(valor)]="consulta"
+            />
+          </div>
+        }
         <table [attr.aria-busy]="cargando()">
           <caption class="oculto">
             Empresas oferentes de la plataforma
@@ -71,14 +84,14 @@ interface CambioPendiente {
                 </tr>
               }
             } @else {
-              @for (t of tenants(); track t.id) {
+              @for (t of filtrados(); track t.id) {
                 <tr>
                   <td class="nombre" data-etiqueta="Nombre">{{ t.name }}</td>
                   <td data-etiqueta="NIT">{{ t.nit }}</td>
                   <td data-etiqueta="Estado">
-                    <span class="estado" [class.inactivo]="t.status === 'inactivo'">{{
+                    <app-insignia [tono]="t.status === 'activo' ? 'exito' : 'peligro'">{{
                       t.status === 'activo' ? 'Activo' : 'Inactivo'
-                    }}</span>
+                    }}</app-insignia>
                   </td>
                   <td data-etiqueta="Creado">
                     <time [attr.datetime]="t.createdAt">{{
@@ -86,47 +99,32 @@ interface CambioPendiente {
                     }}</time>
                   </td>
                   <td class="acciones">
-                    @if (pendiente()?.tenant?.id === t.id) {
-                      <span
-                        class="confirmacion"
-                        role="group"
-                        [attr.aria-label]="'Confirmar cambio de ' + t.name"
-                      >
-                        <span>
-                          ¿{{ pendiente()?.nuevo === 'activo' ? 'Activar' : 'Desactivar' }}
-                          {{ t.name }}?
-                        </span>
-                        <button
-                          type="button"
-                          [class.peligro]="pendiente()?.nuevo === 'inactivo'"
-                          (click)="confirmar()"
-                          [disabled]="guardando()"
-                        >
-                          Confirmar
-                        </button>
-                        <button type="button" class="secundario" (click)="pendiente.set(null)">
-                          Cancelar
-                        </button>
-                      </span>
-                    } @else {
-                      <button
-                        type="button"
-                        class="secundario"
-                        [class.peligro]="t.status === 'activo'"
-                        (click)="pedirCambio(t)"
-                      >
-                        {{ t.status === 'activo' ? 'Desactivar' : 'Activar' }}
-                      </button>
-                    }
+                    <button
+                      type="button"
+                      class="secundario"
+                      [class.peligro]="t.status === 'activo'"
+                      (click)="pedirCambio(t)"
+                    >
+                      {{ t.status === 'activo' ? 'Desactivar' : 'Activar' }}
+                    </button>
                   </td>
                 </tr>
               } @empty {
                 <tr>
                   <td colspan="5">
-                    <div class="vacio">
-                      <strong>No hay tenants registrados.</strong>
-                      <span>Las empresas oferentes aparecerán aquí cuando se registren.</span>
-                    </div>
+                    @if (tenants().length === 0) {
+                      <div class="vacio">
+                        <strong>No hay tenants registrados.</strong>
+                        <span>Las empresas oferentes aparecerán aquí cuando se registren.</span>
+                      </div>
+                    } @else {
+                      <div class="vacio">
+                        <strong>Ningún tenant coincide con «{{ consulta() }}».</strong>
+                        <button type="button" class="secundario" (click)="consulta.set('')">
+                          Limpiar búsqueda
+                        </button>
+                      </div>
+                    }
                   </td>
                 </tr>
               }
@@ -137,6 +135,27 @@ interface CambioPendiente {
           <p class="oculto" role="status">Cargando tenants…</p>
         }
       </section>
+
+      <app-dialogo-confirmacion
+        [abierto]="pendiente() !== null"
+        [titulo]="tituloDialogo()"
+        [textoConfirmar]="pendiente()?.nuevo === 'activo' ? 'Sí, activar' : 'Sí, desactivar'"
+        [peligro]="pendiente()?.nuevo === 'inactivo'"
+        [ocupado]="guardando()"
+        (confirmar)="confirmar()"
+        (cancelar)="cancelarCambio()"
+      >
+        <p>
+          @if (pendiente()?.nuevo === 'inactivo') {
+            Sus usuarios no podrán registrarse ni iniciar sesión hasta que lo actives de nuevo.
+          } @else {
+            Sus usuarios podrán registrarse e iniciar sesión de nuevo.
+          }
+        </p>
+        @if (error() && pendiente()) {
+          <p class="alerta" role="alert">{{ error() }}</p>
+        }
+      </app-dialogo-confirmacion>
     </div>
   `,
 })
@@ -153,6 +172,17 @@ export class Tenants implements OnInit {
   );
   protected readonly inactivos = computed(() => this.tenants().length - this.activos());
   protected readonly filasEsqueleto = [1, 2, 3];
+  protected readonly consulta = signal('');
+  protected readonly filtrados = computed(() =>
+    this.tenants().filter((t) => coincide(this.consulta(), t.name, t.nit)),
+  );
+  protected readonly tituloDialogo = computed(() => {
+    const cambio = this.pendiente();
+    if (!cambio) {
+      return '';
+    }
+    return `¿${cambio.nuevo === 'activo' ? 'Activar' : 'Desactivar'} ${cambio.tenant.name}?`;
+  });
 
   async ngOnInit(): Promise<void> {
     try {
@@ -167,6 +197,11 @@ export class Tenants implements OnInit {
   pedirCambio(tenant: Tenant): void {
     this.error.set(null);
     this.pendiente.set({ tenant, nuevo: tenant.status === 'activo' ? 'inactivo' : 'activo' });
+  }
+
+  cancelarCambio(): void {
+    this.pendiente.set(null);
+    this.error.set(null);
   }
 
   async confirmar(): Promise<void> {

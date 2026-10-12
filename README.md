@@ -47,6 +47,13 @@ src/styles.scss           Fuente, tokens, base y estilos globales de formularios
 - **Espaciado:** escala de 4 px (`--qp-espacio-1` = 4 px … `--qp-espacio-12` = 48 px). Los controles miden al menos `--qp-alto-control` (40 px).
 - **Movimiento:** `--qp-curva-salida` con `--qp-duracion-rapida` (120 ms) para hover y presión, y `--qp-duracion-media` (200 ms) para menús y diálogos. Con `prefers-reduced-motion` las duraciones son 0.
 - **Shell (SCRUM-435):** con sesión, barra lateral azul (`--qp-lateral-*`) con la navegación por rol y encabezado con el usuario; por debajo de 56rem la barra es un panel deslizable (botón de menú, velo y Escape). Iconos en `shared/icono.ts` (SVG propio, trazo 1.75 px). Las rutas definen el título del documento.
+- **Componentes compartidos (`src/app/shared/`, SCRUM-437):**
+  - `app-insignia` (`tono`: `exito`, `aviso`, `peligro`, `info`, `neutro`): estado con texto; el color nunca va solo.
+  - `app-estado-verificacion` (`estado`): `verificationStatus` del técnico (pendiente, aprobado, rechazado, suspendido).
+  - `app-campo-busqueda` (`etiqueta`, `[(valor)]`) y `coincide()`: filtran listas ya cargadas sin distinguir tildes ni mayúsculas; no llaman a la API.
+  - `app-dialogo-confirmacion` (`abierto`, `titulo`, `textoConfirmar`, `peligro`, `ocupado`, `(confirmar)`, `(cancelar)`): `<dialog>` modal nativo para acciones con consecuencias; el contenido proyectado explica qué pasa.
+  - `app-tarjeta-detalle` (`titulo`, `subtitulo`, `datos`, ranuras `[estado]` y `[acciones]`): detalle de una entidad, como el técnico en SCRUM-39.
+  - Patrones de página en `styles.scss`: `.pagina`, `.encabezado-pagina`, `.alerta`, `.vacio`, `.esqueleto` y `button.peligro`.
 - **Estados de componentes:** todo control interactivo define hover, foco visible (`--qp-foco`), deshabilitado y, si aplica, cargando, vacío y error.
 
 ## Comandos

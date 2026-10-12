@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-export type NombreIcono = 'inicio' | 'tenants' | 'menu' | 'cerrar' | 'salir';
+export type NombreIcono = 'inicio' | 'tenants' | 'menu' | 'cerrar' | 'salir' | 'buscar';
 
 /**
  * Iconos del panel en SVG propio, con un solo trazo de 1.75 px (basados en Lucide, licencia ISC). Son decorativos:
@@ -53,6 +53,10 @@ export type NombreIcono = 'inicio' | 'tenants' | 'menu' | 'cerrar' | 'salir';
         @case ('cerrar') {
           <path d="M18 6 6 18" />
           <path d="m6 6 12 12" />
+        }
+        @case ('buscar') {
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
         }
         @case ('salir') {
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

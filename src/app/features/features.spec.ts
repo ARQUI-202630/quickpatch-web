@@ -65,8 +65,12 @@ describe('features', () => {
       botones(tabla, 'Desactivar')[0].click();
       fixture.detectChanges();
       expect(texto(tabla)).toContain('¿Desactivar Alfa?');
+      expect(tabla.querySelector('dialog')?.hasAttribute('open')).toBe(true);
+      expect(texto(tabla.querySelector('dialog') as HTMLElement)).toContain(
+        'no podrán registrarse ni iniciar sesión',
+      );
 
-      botones(tabla, 'Confirmar')[0].click();
+      botones(tabla, 'Sí, desactivar')[0].click();
       const req = http.expectOne('/api/v1/platform/tenants/t1');
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual({ status: 'inactivo' });
@@ -76,6 +80,7 @@ describe('features', () => {
 
       expect(botones(tabla, 'Activar').length).toBe(2);
       expect(texto(tabla)).not.toContain('¿Desactivar');
+      expect(tabla.querySelector('dialog')?.hasAttribute('open')).toBe(false);
     });
 
     it('cancelar no llama a la API', async () => {
@@ -88,6 +93,7 @@ describe('features', () => {
       fixture.detectChanges();
 
       expect(texto(tabla)).not.toContain('¿Activar');
+      expect(tabla.querySelector('dialog')?.hasAttribute('open')).toBe(false);
     });
 
     it('muestra el error del servidor', async () => {
@@ -96,7 +102,7 @@ describe('features', () => {
 
       botones(tabla, 'Desactivar')[0].click();
       fixture.detectChanges();
-      botones(tabla, 'Confirmar')[0].click();
+      botones(tabla, 'Sí, desactivar')[0].click();
       http
         .expectOne('/api/v1/platform/tenants/t1')
         .flush(
@@ -124,6 +130,51 @@ describe('features', () => {
       fixture.detectChanges();
 
       expect(texto(fixture.nativeElement as HTMLElement)).toContain('No tienes permiso');
+    });
+
+    it('filtra por nombre o NIT sin distinguir tildes y permite limpiar la búsqueda', async () => {
+      const fixture = await crear();
+      const tabla = fixture.nativeElement as HTMLElement;
+      const buscar = tabla.querySelector('input[type="search"]') as HTMLInputElement;
+
+      buscar.value = 'ALFA';
+      buscar.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(tabla.querySelectorAll('tbody tr').length).toBe(1);
+      expect(texto(tabla.querySelector('tbody') as HTMLElement)).toContain('Alfa');
+
+      buscar.value = '901';
+      buscar.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(texto(tabla.querySelector('tbody') as HTMLElement)).toContain('Beta');
+
+      buscar.value = 'gamma';
+      buscar.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(texto(tabla)).toContain('Ningún tenant coincide con «gamma».');
+
+      botones(tabla, 'Limpiar búsqueda')[0].click();
+      fixture.detectChanges();
+      expect(tabla.querySelectorAll('tbody tr').length).toBe(2);
+    });
+
+    it('un error al guardar se muestra dentro del diálogo y cancelar lo limpia', async () => {
+      const fixture = await crear();
+      const tabla = fixture.nativeElement as HTMLElement;
+
+      botones(tabla, 'Activar')[0].click();
+      fixture.detectChanges();
+      botones(tabla, 'Sí, activar')[0].click();
+      http
+        .expectOne('/api/v1/platform/tenants/t2')
+        .flush({ type: 'about:blank' }, { status: 500, statusText: 'Error' });
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(tabla.querySelector('dialog [role="alert"]')).not.toBeNull();
+      botones(tabla, 'Cancelar')[0].click();
+      fixture.detectChanges();
+      expect(tabla.querySelector('[role="alert"]')).toBeNull();
     });
 
     it('muestra filas de carga y luego el resumen de activos e inactivos', async () => {
@@ -158,7 +209,7 @@ describe('features', () => {
 
       botones(tabla, 'Desactivar')[0].click();
       fixture.detectChanges();
-      expect(botones(tabla, 'Confirmar')[0].classList).toContain('peligro');
+      expect(botones(tabla, 'Sí, desactivar')[0].classList).toContain('peligro');
     });
 
     it('sin tenants muestra el estado vacío y no el resumen', async () => {

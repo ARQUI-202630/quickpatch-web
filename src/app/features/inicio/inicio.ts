@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 
 import { Sesion } from '../../core/sesion';
+import { Insignia } from '../../shared/insignia';
 
 interface Capacidad {
   titulo: string;
@@ -26,6 +27,7 @@ const CAPACIDADES: readonly Capacidad[] = [
 /** Inicio del administrador del tenant. Sus capacidades (técnicos, catálogo, reportes) llegan en próximas historias. */
 @Component({
   selector: 'app-inicio',
+  imports: [Insignia],
   styles: `
     .capacidades {
       margin: 0;
@@ -63,11 +65,9 @@ const CAPACIDADES: readonly Capacidad[] = [
       font-size: var(--qp-texto-sm);
     }
 
-    .estado {
+    app-insignia {
       grid-row: 1 / span 2;
       grid-column: 2;
-      background: var(--qp-info-fondo);
-      color: var(--qp-info);
     }
   `,
   template: `
@@ -86,7 +86,7 @@ const CAPACIDADES: readonly Capacidad[] = [
             <li>
               <h3>{{ c.titulo }}</h3>
               <p>{{ c.detalle }}</p>
-              <span class="estado">Próximamente</span>
+              <app-insignia tono="info">Próximamente</app-insignia>
             </li>
           }
         </ul>

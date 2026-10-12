@@ -37,8 +37,13 @@ tbody tr:last-child td {
   text-align: right;
 }
 
-.confirmacion {
-  justify-content: flex-end;
+.herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qp-espacio-3);
+  padding: var(--qp-espacio-4) var(--qp-espacio-6);
+  border-bottom: 1px solid var(--qp-borde);
 }
 
 .fila-esqueleto:hover {
@@ -97,8 +102,8 @@ tbody tr:last-child td {
     padding-top: var(--qp-espacio-2);
   }
 
-  .confirmacion {
-    justify-content: flex-start;
+  .herramientas {
+    padding-inline: var(--qp-espacio-4);
   }
 
   .fila-esqueleto td:empty {
