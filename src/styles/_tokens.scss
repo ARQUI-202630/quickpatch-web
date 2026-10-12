@@ -1,0 +1,137 @@
+/*
+ * Tokens de diseño del panel administrativo de QUICKPATCH (SCRUM-434).
+ *
+ * Dos niveles:
+ *   - Primitivos (--qp-azul-*, --qp-neutro-*, ...): la paleta. No se usan directamente en componentes.
+ *   - Semánticos (--qp-color-*, --qp-texto-*, --qp-espacio-*, ...): la intención. Es lo único que deben usar
+ *     las pantallas y componentes, para poder ajustar la paleta o agregar un tema sin tocarlos.
+ *
+ * El azul de marca es #00468c (--qp-azul-700). Las escalas están en OKLCH con el mismo tono (254.9°) y los
+ * neutros llevan un leve matiz azul. Ver la guía en README.md (sección «Sistema de diseño»).
+ */
+:root {
+  /* ── Primitivos: azul de marca ───────────────────────────────────────────── */
+  --qp-azul-50: oklch(0.975 0.012 254.9);
+  --qp-azul-100: oklch(0.945 0.026 254.9);
+  --qp-azul-200: oklch(0.89 0.053 254.9);
+  --qp-azul-300: oklch(0.8 0.09 254.9);
+  --qp-azul-400: oklch(0.68 0.13 254.9);
+  --qp-azul-500: oklch(0.57 0.155 254.9);
+  --qp-azul-600: oklch(0.48 0.15 254.9);
+  --qp-azul-700: oklch(0.405 0.132 254.9); /* #00468c, azul QUICKPATCH */
+  --qp-azul-800: oklch(0.33 0.105 254.9);
+  --qp-azul-900: oklch(0.26 0.075 254.9);
+  --qp-azul-950: oklch(0.2 0.05 254.9);
+
+  /* ── Primitivos: neutros con matiz azul ──────────────────────────────────── */
+  --qp-neutro-0: oklch(1 0 0);
+  --qp-neutro-25: oklch(0.985 0.008 254.9);
+  --qp-neutro-50: oklch(0.97 0.008 254.9);
+  --qp-neutro-100: oklch(0.94 0.008 254.9);
+  --qp-neutro-200: oklch(0.9 0.008 254.9);
+  --qp-neutro-300: oklch(0.84 0.008 254.9);
+  --qp-neutro-400: oklch(0.72 0.008 254.9);
+  --qp-neutro-500: oklch(0.58 0.008 254.9);
+  --qp-neutro-600: oklch(0.48 0.008 254.9);
+  --qp-neutro-700: oklch(0.39 0.008 254.9);
+  --qp-neutro-800: oklch(0.3 0.008 254.9);
+  --qp-neutro-900: oklch(0.22 0.008 254.9);
+
+  /* ── Primitivos: estados ─────────────────────────────────────────────────── */
+  --qp-verde-50: oklch(0.96 0.03 150);
+  --qp-verde-700: oklch(0.5 0.12 150);
+  --qp-ambar-50: oklch(0.96 0.04 85);
+  --qp-ambar-700: oklch(0.55 0.118 70);
+  --qp-rojo-50: oklch(0.96 0.019 20);
+  --qp-rojo-700: oklch(0.5 0.17 25);
+
+  /* ── Semánticos: superficies ─────────────────────────────────────────────── */
+  --qp-fondo: var(--qp-neutro-50); /* fondo de la aplicación */
+  --qp-superficie: var(--qp-neutro-0); /* tarjetas, tablas, barra lateral */
+  --qp-superficie-sutil: var(--qp-neutro-25); /* filas alternas, cabeceras de tabla */
+  --qp-superficie-hover: var(--qp-azul-50); /* fila o ítem bajo el cursor */
+  --qp-borde: var(--qp-neutro-200);
+  --qp-borde-fuerte: var(--qp-neutro-300); /* campos de formulario */
+
+  /* ── Semánticos: texto (contraste sobre --qp-superficie) ─────────────────── */
+  --qp-texto: var(--qp-neutro-900); /* 17.3:1 */
+  --qp-texto-secundario: var(--qp-neutro-600); /* 6.5:1, notas y metadatos */
+  --qp-texto-deshabilitado: var(--qp-neutro-400); /* solo controles deshabilitados */
+  --qp-texto-marca: var(--qp-azul-700); /* 9.2:1, títulos y enlaces */
+  --qp-texto-sobre-primario: var(--qp-neutro-0);
+
+  /* ── Semánticos: acción primaria ─────────────────────────────────────────── */
+  --qp-color-primario: var(--qp-azul-700);
+  --qp-color-primario-hover: var(--qp-azul-800);
+  --qp-color-primario-activo: var(--qp-azul-900);
+  --qp-color-secundario: var(--qp-azul-100); /* fondo de acciones secundarias */
+  --qp-color-secundario-hover: var(--qp-azul-200);
+  --qp-foco: var(--qp-azul-500); /* anillo de foco visible */
+  --qp-seleccion: var(--qp-azul-200);
+
+  /* ── Semánticos: estados (texto 700 sobre fondo 50, ≥ 4.5:1) ─────────────── */
+  --qp-exito: var(--qp-verde-700);
+  --qp-exito-fondo: var(--qp-verde-50);
+  --qp-aviso: var(--qp-ambar-700);
+  --qp-aviso-fondo: var(--qp-ambar-50);
+  --qp-peligro: var(--qp-rojo-700);
+  --qp-peligro-fondo: var(--qp-rojo-50);
+  --qp-info: var(--qp-azul-700);
+  --qp-info-fondo: var(--qp-azul-50);
+
+  /* ── Tipografía ──────────────────────────────────────────────────────────── */
+  --qp-fuente:
+    'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --qp-texto-xs: 0.75rem; /* 12px: badges, ayudas */
+  --qp-texto-sm: 0.875rem; /* 14px: tablas, etiquetas, botones */
+  --qp-texto-md: 1rem; /* 16px: cuerpo */
+  --qp-texto-lg: 1.125rem; /* 18px: títulos de tarjeta */
+  --qp-texto-xl: 1.375rem; /* 22px: título de página */
+  --qp-texto-2xl: 1.75rem; /* 28px: encabezados destacados */
+  --qp-peso-normal: 400;
+  --qp-peso-medio: 500;
+  --qp-peso-semibold: 600;
+  --qp-peso-bold: 700;
+  --qp-interlineado: 1.5;
+  --qp-interlineado-titulo: 1.25;
+  --qp-tracking-titulo: -0.015em;
+
+  /* ── Espaciado (escala de 4px) ───────────────────────────────────────────── */
+  --qp-espacio-1: 0.25rem;
+  --qp-espacio-2: 0.5rem;
+  --qp-espacio-3: 0.75rem;
+  --qp-espacio-4: 1rem;
+  --qp-espacio-5: 1.25rem;
+  --qp-espacio-6: 1.5rem;
+  --qp-espacio-8: 2rem;
+  --qp-espacio-10: 2.5rem;
+  --qp-espacio-12: 3rem;
+
+  /* ── Radios ──────────────────────────────────────────────────────────────── */
+  --qp-radio-sm: 6px; /* campos, botones */
+  --qp-radio-md: 10px; /* tarjetas, diálogos */
+  --qp-radio-pildora: 999px; /* badges de estado */
+
+  /* ── Sombras (con desplazamiento y difuminado, teñidas de azul) ──────────── */
+  --qp-sombra-sm: 0 1px 2px oklch(0.26 0.075 254.9 / 6%), 0 1px 3px oklch(0.26 0.075 254.9 / 8%);
+  --qp-sombra-md: 0 2px 4px oklch(0.26 0.075 254.9 / 6%), 0 6px 16px oklch(0.26 0.075 254.9 / 8%);
+  --qp-sombra-lg: 0 4px 8px oklch(0.26 0.075 254.9 / 6%), 0 16px 40px oklch(0.26 0.075 254.9 / 12%);
+
+  /* ── Movimiento ──────────────────────────────────────────────────────────── */
+  --qp-curva-salida: cubic-bezier(0.23, 1, 0.32, 1);
+  --qp-duracion-rapida: 120ms; /* hover y presión */
+  --qp-duracion-media: 200ms; /* aparición de menús y diálogos */
+
+  /* ── Layout ──────────────────────────────────────────────────────────────── */
+  --qp-ancho-contenido: 72rem;
+  --qp-ancho-barra-lateral: 16rem;
+  --qp-alto-encabezado: 4rem;
+  --qp-alto-control: 2.5rem; /* altura mínima de campos y botones */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --qp-duracion-rapida: 0ms;
+    --qp-duracion-media: 0ms;
+  }
+}
