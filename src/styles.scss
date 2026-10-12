@@ -35,7 +35,7 @@ input {
   transition: border-color var(--qp-duracion-rapida) var(--qp-curva-salida);
 
   &:hover {
-    border-color: var(--qp-neutro-400);
+    border-color: var(--qp-borde-fuerte-hover);
   }
 
   &:focus-visible {
