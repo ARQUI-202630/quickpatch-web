@@ -1,104 +1,164 @@
-/* Estilos globales del panel administrativo. */
-:root {
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-  color: #1f2933;
-  background: #f4f6fa;
-}
-
-body {
-  margin: 0;
-}
+/* Estilos globales del panel administrativo. Todos los valores salen de los tokens (styles/_tokens.scss). */
+@use '@fontsource-variable/plus-jakarta-sans';
+@use 'styles/tokens';
+@use 'styles/base';
 
 .tarjeta {
-  max-width: 960px;
+  max-width: var(--qp-ancho-contenido);
   margin: 0 auto;
-  padding: 1.5rem;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
+  padding: var(--qp-espacio-6);
+  border: 1px solid var(--qp-borde);
+  border-radius: var(--qp-radio-md);
+  background: var(--qp-superficie);
+  box-shadow: var(--qp-sombra-sm);
 }
 
 form {
   display: grid;
-  gap: 0.5rem;
-  max-width: 360px;
+  gap: var(--qp-espacio-2);
+  max-width: 24rem;
+}
+
+label {
+  font-size: var(--qp-texto-sm);
+  font-weight: var(--qp-peso-medio);
 }
 
 input {
-  padding: 0.5rem;
-  border: 1px solid #c5ccd6;
-  border-radius: 4px;
+  min-height: var(--qp-alto-control);
+  padding: var(--qp-espacio-2) var(--qp-espacio-3);
+  border: 1px solid var(--qp-borde-fuerte);
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-superficie);
+  color: var(--qp-texto);
   font: inherit;
+  transition: border-color var(--qp-duracion-rapida) var(--qp-curva-salida);
+
+  &:hover {
+    border-color: var(--qp-neutro-400);
+  }
+
+  &:focus-visible {
+    border-color: var(--qp-foco);
+    outline-offset: 0;
+  }
+
+  &.ng-invalid.ng-touched,
+  &[aria-invalid='true'] {
+    border-color: var(--qp-peligro);
+  }
+
+  &::placeholder {
+    color: var(--qp-texto-secundario);
+  }
 }
 
 button {
-  padding: 0.5rem 1rem;
+  min-height: var(--qp-alto-control);
+  padding: var(--qp-espacio-2) var(--qp-espacio-4);
   border: none;
-  border-radius: 4px;
-  background: #00468c;
-  color: #fff;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-color-primario);
+  color: var(--qp-texto-sobre-primario);
   font: inherit;
+  font-size: var(--qp-texto-sm);
+  font-weight: var(--qp-peso-semibold);
   cursor: pointer;
-}
+  transition:
+    background-color var(--qp-duracion-rapida) var(--qp-curva-salida),
+    transform var(--qp-duracion-rapida) var(--qp-curva-salida);
 
-button.secundario {
-  background: #e1ebfa;
-  color: #00468c;
-}
+  &:hover:not(:disabled) {
+    background: var(--qp-color-primario-hover);
+  }
 
-button:disabled {
-  opacity: 0.6;
-  cursor: default;
+  &:active:not(:disabled) {
+    background: var(--qp-color-primario-activo);
+    transform: scale(0.98);
+  }
+
+  &.secundario {
+    background: var(--qp-color-secundario);
+    color: var(--qp-texto-marca);
+
+    &:hover:not(:disabled) {
+      background: var(--qp-color-secundario-hover);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  font-size: var(--qp-texto-sm);
 }
 
 caption {
+  padding-bottom: var(--qp-espacio-3);
   text-align: left;
-  padding-bottom: 0.5rem;
-  color: #555;
+  color: var(--qp-texto-secundario);
 }
 
 th,
 td {
-  padding: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  padding: var(--qp-espacio-3);
+  border-bottom: 1px solid var(--qp-borde);
   text-align: left;
 }
 
-.estado {
-  padding: 0.125rem 0.5rem;
-  border-radius: 999px;
-  background: #e6f5e6;
-  color: #1b5e20;
+th {
+  background: var(--qp-superficie-sutil);
+  color: var(--qp-texto-secundario);
+  font-weight: var(--qp-peso-semibold);
 }
 
-.estado.inactivo {
-  background: #fae1e1;
-  color: #8a1c1c;
+tbody tr {
+  transition: background-color var(--qp-duracion-rapida) var(--qp-curva-salida);
+
+  &:hover {
+    background: var(--qp-superficie-hover);
+  }
+}
+
+.estado {
+  display: inline-block;
+  padding: var(--qp-espacio-1) var(--qp-espacio-3);
+  border-radius: var(--qp-radio-pildora);
+  background: var(--qp-exito-fondo);
+  color: var(--qp-exito);
+  font-size: var(--qp-texto-xs);
+  font-weight: var(--qp-peso-semibold);
+
+  &.inactivo {
+    background: var(--qp-peligro-fondo);
+    color: var(--qp-peligro);
+  }
 }
 
 .confirmacion {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--qp-espacio-2);
 }
 
 .error,
 .error-campo {
-  color: #b00020;
+  color: var(--qp-peligro);
+}
+
+.error-campo {
+  margin: 0;
+  font-size: var(--qp-texto-sm);
 }
 
 .nota {
-  color: #555;
+  color: var(--qp-texto-secundario);
 }
 
 .oculto {
@@ -107,4 +167,70 @@ td {
   height: 1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
+}
+
+/* ── Piezas del shell reutilizables (SCRUM-435) ──────────────────────────── */
+.saltar {
+  position: absolute;
+  top: var(--qp-espacio-2);
+  left: var(--qp-espacio-2);
+  z-index: 50;
+  padding: var(--qp-espacio-2) var(--qp-espacio-4);
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-superficie);
+  box-shadow: var(--qp-sombra-md);
+  font-weight: var(--qp-peso-semibold);
+  transform: translateY(-200%);
+
+  &:focus-visible {
+    transform: none;
+  }
+}
+
+/* ── Marca ─────────────────────────────────────────────────────────────────── */
+.marca {
+  display: flex;
+  align-items: center;
+  gap: var(--qp-espacio-3);
+
+  h1 {
+    display: grid;
+    margin: 0;
+    font-size: var(--qp-texto-md);
+    font-weight: var(--qp-peso-bold);
+    letter-spacing: 0.02em;
+    line-height: var(--qp-interlineado-titulo);
+
+    span {
+      font-size: var(--qp-texto-xs);
+      font-weight: var(--qp-peso-medio);
+      letter-spacing: 0;
+    }
+  }
+}
+
+.sello {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-color-primario);
+  color: var(--qp-texto-sobre-primario);
+  font-size: var(--qp-texto-lg);
+  font-weight: var(--qp-peso-bold);
+}
+
+/* ── Botón solo con icono ─────────────────────────────────────────────────── */
+.boton-icono {
+  display: inline-grid;
+  place-items: center;
+  width: var(--qp-alto-control);
+  padding: 0;
+  background: transparent;
+  color: inherit;
+
+  &:hover:not(:disabled) {
+    background: var(--qp-superficie-hover);
+  }
 }

@@ -1,0 +1,75 @@
+/* Base del panel: reset mínimo y superficies del navegador tematizadas con los tokens. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: var(--qp-fuente);
+  font-size: 100%;
+  line-height: var(--qp-interlineado);
+  color: var(--qp-texto);
+  background: var(--qp-fondo);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  accent-color: var(--qp-color-primario);
+  caret-color: var(--qp-color-primario);
+  scrollbar-color: var(--qp-neutro-300) transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 var(--qp-espacio-3);
+  line-height: var(--qp-interlineado-titulo);
+  letter-spacing: var(--qp-tracking-titulo);
+  font-weight: var(--qp-peso-bold);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--qp-texto-2xl);
+}
+
+h2 {
+  font-size: var(--qp-texto-xl);
+}
+
+h3 {
+  font-size: var(--qp-texto-lg);
+}
+
+p {
+  margin: 0 0 var(--qp-espacio-3);
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--qp-texto-marca);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+::selection {
+  background: var(--qp-seleccion);
+  color: var(--qp-azul-950);
+}
+
+:focus-visible {
+  outline: 2px solid var(--qp-foco);
+  outline-offset: 2px;
+}
+
+/* Cifras de ancho fijo para que las columnas numéricas (NIT, fechas, conteos) se alineen. */
+table,
+time,
+.numerico {
+  font-variant-numeric: tabular-nums;
+}
