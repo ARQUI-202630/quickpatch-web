@@ -3,7 +3,7 @@
 # Qué corre en cada rama:
 #   PR a develop        → lint, pruebas y build
 #   push develop        → lo mismo
-#   push release/*      → además, publica el panel en QA (VM2)
+#   push release/*      → además, publica el panel en QA (VM1, carpeta panel-qa)
 #   push main           → además, publica el panel en producción (VM1)
 name: CI/CD
 
@@ -74,11 +74,11 @@ jobs:
           path: ${{ steps.build.outputs.carpeta }}
           retention-days: 7
 
-  # Publica el build del panel (artefacto `panel` del job ci). Corre en el runner self-hosted de VM1:
-  #   release/* → QA: /opt/quickpatch/qa/panel en VM2, por SSH con la llave que deja deploy-runner.yml
-  #   main      → producción: /opt/quickpatch/gateway/panel en VM1, la misma máquina del runner
+  # Publica el build del panel (artefacto `panel` del job ci). Corre en el runner self-hosted de VM1, la misma máquina
+  # que sirve los dos paneles con su Nginx (decisión del 12 de octubre, SCRUM-446; INFRASTRUCTURE.md, sección 3.2):
+  #   release/* → QA: /opt/quickpatch/gateway/panel-qa
+  #   main      → producción: /opt/quickpatch/gateway/panel
   # Nginx monta la carpeta, así que se reemplaza el contenido sin reemplazar la carpeta.
-  # `tar -m` ignora las fechas de los archivos: los relojes de VM1 y VM2 no están sincronizados.
   # SEGURIDAD: solo con `push`, nunca con `pull_request`: el repo es público.
   desplegar:
     name: Panel en ${{ github.ref == 'refs/heads/main' && 'produccion' || 'qa' }}
@@ -92,7 +92,6 @@ jobs:
       cancel-in-progress: false
     env:
       AMBIENTE: ${{ github.ref == 'refs/heads/main' && 'produccion' || 'qa' }}
-      VM2: 10.43.98.15
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -102,17 +101,12 @@ jobs:
       - name: Publicar
         run: |
           case "$AMBIENTE" in
-            produccion)
-              destino=/opt/quickpatch/gateway/panel
-              find "$destino" -mindepth 1 -delete
-              cp -r panel/. "$destino"/
-              ;;
-            qa)
-              destino=/opt/quickpatch/qa/panel
-              tar -C panel -cf - . | ssh -o StrictHostKeyChecking=accept-new "quickpatch@$VM2" \
-                "find $destino -mindepth 1 -delete && tar -m -C $destino -xf -"
-              ;;
+            produccion) destino=/opt/quickpatch/gateway/panel ;;
+            qa)         destino=/opt/quickpatch/gateway/panel-qa ;;
+            *)          echo "::error::Ambiente desconocido: $AMBIENTE"; exit 1 ;;
           esac
+          find "$destino" -mindepth 1 -delete
+          cp -r panel/. "$destino"/
           echo "::notice::Panel publicado en $AMBIENTE ($destino)."
 
   dependency-review:
