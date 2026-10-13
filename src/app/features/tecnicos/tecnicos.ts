@@ -25,6 +25,9 @@ interface Accion {
   accion: AccionVerificacion;
   etiqueta: string;
   peligro: boolean;
+  /** Texto propio cuando la misma acción tiene otro sentido (reactivar es `approve` desde suspendido). */
+  consecuencia?: string;
+  hecho?: string;
 }
 
 /** Transiciones que admite cada estado (DD 8.3.13). Cualquier otra responde 409 `transicion-invalida`. */
@@ -33,19 +36,30 @@ const ACCIONES: Record<EstadoVerificacion, readonly Accion[]> = {
     { accion: 'approve', etiqueta: 'Aprobar', peligro: false },
     { accion: 'reject', etiqueta: 'Rechazar', peligro: true },
   ],
-  aprobado: [],
+  aprobado: [{ accion: 'suspend', etiqueta: 'Suspender', peligro: true }],
   rechazado: [{ accion: 'approve', etiqueta: 'Aprobar', peligro: false }],
-  suspendido: [{ accion: 'approve', etiqueta: 'Aprobar', peligro: false }],
+  suspendido: [
+    {
+      accion: 'approve',
+      etiqueta: 'Reactivar',
+      peligro: false,
+      consecuencia: 'Volverá a recibir solicitudes de servicio de los clientes de tu empresa.',
+      hecho: 'reactivado',
+    },
+  ],
 };
 
 const CONSECUENCIA: Record<AccionVerificacion, string> = {
   approve: 'Podrá recibir solicitudes de servicio de los clientes de tu empresa.',
   reject: 'No podrá recibir solicitudes. El técnico verá el motivo.',
+  suspend:
+    'Dejará de recibir solicitudes nuevas; un servicio en curso no se interrumpe. El técnico verá el motivo.',
 };
 
 const HECHO: Record<AccionVerificacion, string> = {
   approve: 'aprobado',
   reject: 'rechazado',
+  suspend: 'suspendido',
 };
 
 export const TAMANO_PAGINA = 20;
@@ -58,8 +72,9 @@ interface CambioPendiente {
 }
 
 /**
- * Verificación de técnicos y proveedores (RF-19, SCRUM-107): lista los del tenant por estado, con paginación del
- * servidor, y permite aprobar y rechazar según la tabla del DD 8.3.13. Rechazar pide un motivo de 5 a 500 caracteres; toda acción pide confirmación.
+ * Verificación de técnicos y proveedores (RF-19, RF-20, SCRUM-107, SCRUM-110): lista los del tenant por estado, con paginación
+ * del servidor, y permite aprobar, rechazar, suspender o reactivar según la tabla del DD 8.3.13. Rechazar y suspender
+ * piden un motivo de 5 a 500 caracteres; toda acción pide confirmación.
  */
 @Component({
   selector: 'app-tecnicos',
@@ -217,7 +232,7 @@ interface CambioPendiente {
         (cancelar)="cancelarCambio()"
       >
         @if (pendiente(); as cambio) {
-          <p>{{ consecuencia(cambio.accion.accion) }}</p>
+          <p>{{ consecuencia(cambio.accion) }}</p>
           @if (pideMotivo()) {
             <div class="campo-motivo">
               <label for="motivo">Motivo</label>
@@ -289,7 +304,7 @@ export class Tecnicos implements OnInit {
   );
   protected readonly pideMotivo = computed(() => {
     const accion = this.pendiente()?.accion.accion;
-    return accion === 'reject';
+    return accion === 'reject' || accion === 'suspend';
   });
   protected readonly tituloDialogo = computed(() => {
     const cambio = this.pendiente();
@@ -305,8 +320,8 @@ export class Tecnicos implements OnInit {
     return ACCIONES[t.verificationStatus];
   }
 
-  protected consecuencia(accion: AccionVerificacion): string {
-    return CONSECUENCIA[accion];
+  protected consecuencia(accion: Accion): string {
+    return accion.consecuencia ?? CONSECUENCIA[accion.accion];
   }
 
   /** Nombre de la categoría; si ya no está activa en el catálogo no se muestra su identificador. */
@@ -367,7 +382,8 @@ export class Tecnicos implements OnInit {
         ),
       );
       this.pendiente.set(null);
-      this.aviso.set(`${cambio.tecnico.fullName} quedó ${HECHO[cambio.accion.accion]}.`);
+      const hecho = cambio.accion.hecho ?? HECHO[cambio.accion.accion];
+      this.aviso.set(`${cambio.tecnico.fullName} quedó ${hecho}.`);
       await this.cargar();
     } catch (e) {
       this.error.set(mensajeDeError(e));

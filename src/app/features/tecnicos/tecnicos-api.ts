@@ -27,7 +27,7 @@ export interface PaginaTecnicos {
   totalItems: number;
 }
 
-/** Esquema `TechnicianVerification`: respuesta de aprobar y rechazar. */
+/** Esquema `TechnicianVerification`: respuesta de aprobar, rechazar y suspender. */
 export interface VerificacionTecnico {
   userId: string;
   verificationStatus: EstadoVerificacion;
@@ -41,10 +41,10 @@ export interface Categoria {
 }
 
 /** Acciones del administrador sobre un técnico (DD 8.3.13). */
-export type AccionVerificacion = 'approve' | 'reject';
+export type AccionVerificacion = 'approve' | 'reject' | 'suspend';
 
 /**
- * Verificación de técnicos y proveedores (RF-19, SCRUM-107); solo `admin_tenant`. El tenant sale del token:
+ * Verificación de técnicos y proveedores (RF-19, RF-20, SCRUM-107, SCRUM-110); solo `admin_tenant`. El tenant sale del token:
  * la UI nunca lo envía.
  */
 @Injectable({ providedIn: 'root' })
@@ -64,7 +64,7 @@ export class TecnicosApi {
     return this.http.get<PaginaTecnicos>(`${this.base}/v1/admin/technicians`, { params });
   }
 
-  /** `approve` no lleva cuerpo; `reject` exige el motivo (5 a 500 caracteres). */
+  /** `approve` no lleva cuerpo; `reject` y `suspend` exigen el motivo (5 a 500 caracteres). */
   cambiarVerificacion(
     userId: string,
     accion: AccionVerificacion,

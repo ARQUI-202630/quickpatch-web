@@ -128,7 +128,7 @@ describe('Tecnicos', () => {
       Array.from(td.querySelectorAll('button')).map((b) => texto(b).trim()),
     );
 
-    expect(acciones).toEqual([['Aprobar', 'Rechazar'], [], ['Aprobar'], ['Aprobar']]);
+    expect(acciones).toEqual([['Aprobar', 'Rechazar'], ['Suspender'], ['Aprobar'], ['Reactivar']]);
   });
 
   it('distingue técnico de proveedor', async () => {
@@ -219,7 +219,7 @@ describe('Tecnicos', () => {
     expect((el.querySelector('#motivo') as HTMLTextAreaElement).value).toBe('');
   });
 
-  it('filtra por aprobados, que no tienen acciones en esta pantalla', async () => {
+  it('filtra por aprobados y suspende con motivo obligatorio (SCRUM-110)', async () => {
     const { fixture, el } = await crear(pagina([]));
 
     botones(el, 'Aprobados')[0].click();
@@ -228,22 +228,75 @@ describe('Tecnicos', () => {
     expect(req.request.params.get('page')).toBe('1');
     req.flush(pagina([tecnico('b2', 'Beto Gil', 'aprobado')]));
     await estable(fixture);
-
     expect(botones(el, 'Aprobados')[0].getAttribute('aria-pressed')).toBe('true');
     expect(botones(el, 'Pendientes')[0].getAttribute('aria-pressed')).toBe('false');
-    expect(texto(el)).toContain('Beto Gil');
-    expect(el.querySelectorAll('td.acciones button').length).toBe(0);
+    expect(botones(el, 'Suspender')[0].classList).toContain('peligro');
+
+    botones(el, 'Suspender')[0].click();
+    fixture.detectChanges();
+    expect(texto(el)).toContain('¿Suspender a Beto Gil?');
+    expect(texto(el.querySelector('dialog'))).toContain('un servicio en curso no se interrumpe');
+    expect(botones(el, 'Sí, suspender')[0].classList).toContain('peligro');
+
+    botones(el, 'Sí, suspender')[0].click();
+    fixture.detectChanges();
+    expect(texto(el.querySelector('#motivo-error'))).toContain(
+      'Escribe un motivo de 5 a 500 caracteres.',
+    );
+
+    escribirMotivo(el, '  Reclamos repetidos  ');
+    botones(el, 'Sí, suspender')[0].click();
+    const suspender = http.expectOne('/api/v1/admin/technicians/b2/suspend');
+    expect(suspender.request.method).toBe('POST');
+    expect(suspender.request.body).toEqual({ reason: 'Reclamos repetidos' });
+    suspender.flush({
+      userId: 'b2',
+      verificationStatus: 'suspendido',
+      reason: 'Reclamos repetidos',
+    });
+    await fixture.whenStable();
+    const recarga = listado();
+    expect(recarga.request.params.get('verificationStatus')).toBe('aprobado');
+    recarga.flush(pagina([]));
+    await estable(fixture);
+
+    expect(texto(el.querySelector('.aviso'))).toContain('Beto Gil quedó suspendido.');
   });
 
-  it('aprueba un suspendido con approve y muestra el motivo de la suspensión', async () => {
+  it('suspender un técnico que ya no está aprobado muestra el 409', async () => {
+    const { fixture, el } = await crear(pagina([tecnico('b2', 'Beto Gil', 'aprobado')]));
+
+    botones(el, 'Suspender')[0].click();
+    fixture.detectChanges();
+    escribirMotivo(el, 'Reclamos repetidos');
+    botones(el, 'Sí, suspender')[0].click();
+    http
+      .expectOne('/api/v1/admin/technicians/b2/suspend')
+      .flush(
+        { type: `${PROBLEMA}transicion-invalida`, title: 'Conflict', status: 409 },
+        { status: 409, statusText: 'Conflict' },
+      );
+    await fixture.whenStable();
+    listado().flush(pagina([tecnico('b2', 'Beto Gil', 'suspendido')]));
+    await estable(fixture);
+
+    expect(texto(el.querySelector('dialog [role="alert"]'))).toContain('ya no admite esta acción');
+    botones(el, 'Cancelar')[0].click();
+    fixture.detectChanges();
+    expect(botones(el, 'Reactivar').length).toBe(1);
+  });
+
+  it('reactiva un suspendido con approve y muestra el motivo de la suspensión (SCRUM-110)', async () => {
     const suspendido = { ...tecnico('d4', 'Dani', 'suspendido'), verificationReason: 'Reclamos' };
     const { fixture, el } = await crear(pagina([suspendido]));
     expect(texto(el.querySelector('.motivo')).trim()).toBe('Reclamos');
 
-    botones(el, 'Aprobar')[0].click();
+    botones(el, 'Reactivar')[0].click();
     fixture.detectChanges();
+    expect(texto(el)).toContain('¿Reactivar a Dani?');
+    expect(texto(el.querySelector('dialog'))).toContain('Volverá a recibir solicitudes');
     expect(el.querySelector('#motivo')).toBeNull();
-    botones(el, 'Sí, aprobar')[0].click();
+    botones(el, 'Sí, reactivar')[0].click();
     const req = http.expectOne('/api/v1/admin/technicians/d4/approve');
     expect(req.request.body).toBeNull();
     req.flush({ userId: 'd4', verificationStatus: 'aprobado', reason: null });
@@ -251,7 +304,7 @@ describe('Tecnicos', () => {
     listado().flush(pagina([]));
     await estable(fixture);
 
-    expect(texto(el.querySelector('.aviso'))).toContain('Dani quedó aprobado.');
+    expect(texto(el.querySelector('.aviso'))).toContain('Dani quedó reactivado.');
   });
 
   it('«Todos» no envía el filtro de estado y repetir el filtro actual no recarga', async () => {
@@ -289,8 +342,7 @@ describe('Tecnicos', () => {
     botones(el, 'Cancelar')[0].click();
     fixture.detectChanges();
     expect(el.querySelector('[role="alert"]')).toBeNull();
-    expect(texto(el)).toContain('Aprobado');
-    expect(el.querySelectorAll('td.acciones button').length).toBe(0);
+    expect(botones(el, 'Suspender').length).toBe(1);
   });
 
   it('un error de validación del servidor se muestra en el diálogo sin recargar', async () => {
