@@ -1,0 +1,227 @@
+/* Verificación de técnicos (SCRUM-107). Misma tabla que tenants; por debajo de 40rem cada fila se apila como ficha. */
+.aviso {
+  margin: 0;
+  padding: var(--qp-espacio-3) var(--qp-espacio-4);
+  border: 1px solid currentColor;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-exito-fondo);
+  color: var(--qp-exito);
+  font-size: var(--qp-texto-sm);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.contenedor-tabla {
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+th:first-child,
+td:first-child {
+  padding-left: var(--qp-espacio-6);
+}
+
+th:last-child,
+td:last-child {
+  padding-right: var(--qp-espacio-6);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.nombre {
+  display: block;
+  font-weight: var(--qp-peso-semibold);
+}
+
+.secundario {
+  display: block;
+  color: var(--qp-texto-secundario);
+  font-size: var(--qp-texto-xs);
+}
+
+.estado {
+  display: grid;
+  justify-items: start;
+  gap: var(--qp-espacio-1);
+}
+
+.motivo {
+  max-width: 16rem;
+  overflow-wrap: anywhere;
+}
+
+.acciones {
+  width: 1%; /* la columna se ajusta a sus botones */
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--qp-espacio-2);
+  white-space: nowrap;
+}
+
+.herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qp-espacio-2);
+  padding: var(--qp-espacio-4) var(--qp-espacio-6);
+  border-bottom: 1px solid var(--qp-borde);
+}
+
+button.filtro {
+  min-height: auto;
+  padding: var(--qp-espacio-1) var(--qp-espacio-3);
+  border: 1px solid var(--qp-borde-fuerte);
+  border-radius: var(--qp-radio-pildora);
+  background: var(--qp-superficie);
+  color: var(--qp-texto-secundario);
+
+  &:hover:not(:disabled) {
+    background: var(--qp-superficie-hover);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--qp-color-primario);
+    background: var(--qp-color-primario);
+    color: var(--qp-texto-sobre-primario);
+  }
+}
+
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qp-espacio-3);
+  padding: var(--qp-espacio-4) var(--qp-espacio-6);
+  border-top: 1px solid var(--qp-borde);
+  color: var(--qp-texto-secundario);
+  font-size: var(--qp-texto-sm);
+
+  div {
+    display: flex;
+    gap: var(--qp-espacio-2);
+  }
+}
+
+.campo-motivo {
+  display: grid;
+  gap: var(--qp-espacio-1);
+  margin-top: var(--qp-espacio-4);
+  color: var(--qp-texto);
+
+  .secundario {
+    justify-self: end;
+  }
+}
+
+textarea {
+  padding: var(--qp-espacio-2) var(--qp-espacio-3);
+  border: 1px solid var(--qp-borde-fuerte);
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-superficie);
+  color: var(--qp-texto);
+  font: inherit;
+  resize: vertical;
+
+  &:focus-visible {
+    border-color: var(--qp-foco);
+    outline-offset: 0;
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--qp-peligro);
+  }
+}
+
+.fila-esqueleto:hover {
+  background: none;
+}
+
+.ancho-sm {
+  width: 4rem;
+}
+
+.ancho-md {
+  width: 6rem;
+}
+
+.ancho-lg {
+  width: 10rem;
+}
+
+@media (max-width: 40rem) {
+  thead {
+    display: none;
+  }
+
+  table,
+  tbody,
+  tr {
+    display: block;
+  }
+
+  tbody tr {
+    display: grid;
+    gap: var(--qp-espacio-2);
+    padding: var(--qp-espacio-4);
+    border-bottom: 1px solid var(--qp-borde);
+  }
+
+  tbody td,
+  tbody td:first-child,
+  tbody td:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qp-espacio-4);
+    padding: 0;
+    border: none;
+  }
+
+  td[data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    color: var(--qp-texto-secundario);
+    font-weight: var(--qp-peso-normal);
+  }
+
+  tbody td[data-etiqueta='Nombre'] {
+    display: grid;
+    justify-content: start;
+    gap: 0;
+  }
+
+  tbody td[data-etiqueta='Nombre']::before {
+    content: none;
+  }
+
+  .estado {
+    justify-items: end;
+    text-align: right;
+  }
+
+  .acciones {
+    width: auto;
+    padding-top: var(--qp-espacio-2);
+  }
+
+  .botones {
+    justify-content: flex-start;
+  }
+
+  .herramientas,
+  .paginacion {
+    padding-inline: var(--qp-espacio-4);
+  }
+
+  .fila-esqueleto td:empty {
+    display: none;
+  }
+}

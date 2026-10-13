@@ -43,6 +43,8 @@ const MENSAJES: Record<string, string> = {
   'no-autenticado': 'Tu sesión terminó. Vuelve a iniciar sesión.',
   'no-encontrado': 'No encontramos lo que buscas.',
   'tenant-plataforma': 'El tenant de la plataforma no se puede desactivar.',
+  'transicion-invalida':
+    'El estado del técnico cambió y ya no admite esta acción. Revisa la lista actualizada.',
   validacion: 'Revisa los datos enviados.',
 };
 

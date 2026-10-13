@@ -327,6 +327,8 @@ describe('features', () => {
     const capacidades = fixture.nativeElement.querySelectorAll('.capacidades li');
     expect(capacidades.length).toBe(3);
     expect(texto(capacidades[0] as HTMLElement)).toContain('Técnicos');
-    expect(texto(capacidades[0] as HTMLElement)).toContain('Próximamente');
+    expect(capacidades[0].querySelector('a')?.getAttribute('href')).toBe('/tecnicos');
+    expect(texto(capacidades[0] as HTMLElement)).not.toContain('Próximamente');
+    expect(texto(capacidades[1] as HTMLElement)).toContain('Próximamente');
   });
 });
