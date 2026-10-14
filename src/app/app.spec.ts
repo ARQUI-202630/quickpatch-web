@@ -68,12 +68,12 @@ describe('App', () => {
     expect(navegar).toHaveBeenCalledWith(['/iniciar-sesion']);
   });
 
-  it('con sesión de empresa solo muestra Inicio', async () => {
+  it('con sesión de empresa muestra Inicio y Técnicos', async () => {
     await iniciarSesion('admin_tenant', 'Pedro');
     const { el } = renderizar();
 
     const enlaces = [...el.querySelectorAll('nav a')].map((a) => a.textContent?.trim());
-    expect(enlaces).toEqual(['Inicio']);
+    expect(enlaces).toEqual(['Inicio', 'Técnicos']);
     expect(el.querySelector('.rol')?.textContent).toContain('Administrador de empresa');
     expect(el.querySelector('.avatar')?.textContent?.trim()).toBe('P');
   });

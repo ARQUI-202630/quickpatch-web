@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { Sesion } from '../../core/sesion';
 import { Insignia } from '../../shared/insignia';
@@ -6,13 +7,16 @@ import { Insignia } from '../../shared/insignia';
 interface Capacidad {
   titulo: string;
   detalle: string;
+  /** Ruta de la capacidad ya disponible; sin ruta, llega en una próxima historia. */
+  ruta?: string;
 }
 
-/** Capacidades del administrador del tenant que llegan en próximas historias; no hay datos inventados. */
+/** Capacidades del administrador del tenant; las que aún no tienen ruta llegan en próximas historias. */
 const CAPACIDADES: readonly Capacidad[] = [
   {
     titulo: 'Técnicos',
     detalle: 'Aprobar o rechazar el registro de técnicos y proveedores, y suspender cuentas.',
+    ruta: '/tecnicos',
   },
   {
     titulo: 'Catálogo de servicios',
@@ -24,10 +28,10 @@ const CAPACIDADES: readonly Capacidad[] = [
   },
 ];
 
-/** Inicio del administrador del tenant. Sus capacidades (técnicos, catálogo, reportes) llegan en próximas historias. */
+/** Inicio del administrador del tenant: sus capacidades (técnicos, catálogo, reportes) y cuáles ya están disponibles. */
 @Component({
   selector: 'app-inicio',
-  imports: [Insignia],
+  imports: [Insignia, RouterLink],
   styles: `
     .capacidades {
       margin: 0;
@@ -65,9 +69,16 @@ const CAPACIDADES: readonly Capacidad[] = [
       font-size: var(--qp-texto-sm);
     }
 
-    app-insignia {
+    app-insignia,
+    .ir {
       grid-row: 1 / span 2;
       grid-column: 2;
+    }
+
+    .ir {
+      color: var(--qp-texto-marca);
+      font-size: var(--qp-texto-sm);
+      font-weight: var(--qp-peso-semibold);
     }
   `,
   template: `
@@ -80,13 +91,17 @@ const CAPACIDADES: readonly Capacidad[] = [
       </header>
 
       <section class="tarjeta" aria-labelledby="titulo-capacidades">
-        <h3 id="titulo-capacidades" class="oculto">Próximas capacidades</h3>
+        <h3 id="titulo-capacidades" class="oculto">Capacidades</h3>
         <ul class="capacidades">
           @for (c of capacidades; track c.titulo) {
             <li>
               <h3>{{ c.titulo }}</h3>
               <p>{{ c.detalle }}</p>
-              <app-insignia tono="info">Próximamente</app-insignia>
+              @if (c.ruta) {
+                <a class="ir" [routerLink]="c.ruta">Ir a {{ c.titulo.toLowerCase() }}</a>
+              } @else {
+                <app-insignia tono="info">Próximamente</app-insignia>
+              }
             </li>
           }
         </ul>

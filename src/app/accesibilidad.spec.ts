@@ -9,6 +9,8 @@ import { App } from './app';
 import { Sesion } from './core/sesion';
 import { InicioSesion } from './features/autenticacion/inicio-sesion';
 import { Inicio } from './features/inicio/inicio';
+import { Tecnicos } from './features/tecnicos/tecnicos';
+import { TecnicoAdmin } from './features/tecnicos/tecnicos-api';
 import { Tenants } from './features/tenants/tenants';
 import { Tenant } from './features/tenants/tenants-api';
 
@@ -118,6 +120,37 @@ describe('accesibilidad', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(el.querySelector('dialog [role="alert"]')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('técnicos con datos, paginación y el diálogo de motivo con error', async () => {
+    const tecnicos: TecnicoAdmin[] = Array.from({ length: 20 }, (_, i) => ({
+      userId: `u${i}`,
+      fullName: `Técnico ${i}`,
+      email: `u${i}@correo.co`,
+      role: 'tecnico',
+      documentId: `CC ${i}`,
+      specialtyId: 'c1',
+      verificationStatus: i % 2 === 0 ? 'pendiente' : 'suspendido',
+      verificationReason: i % 2 === 0 ? null : 'Reclamos',
+      createdAt: '2026-10-05T00:00:00Z',
+    }));
+    const { fixture, el } = crear(Tecnicos);
+    expect(await infracciones(el)).toEqual([]);
+    http.expectOne('/api/v1/catalog/categories').flush([{ id: 'c1', name: 'Plomería' }]);
+    http
+      .expectOne((req) => req.url === '/api/v1/admin/technicians')
+      .flush({ items: tecnicos, page: 1, size: 20, totalItems: 30 });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('.paginacion')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+
+    (el.querySelector('td.acciones button.peligro') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    boton(el, 'Sí, rechazar').click();
+    fixture.detectChanges();
+    expect(el.querySelector('#motivo-error')).not.toBeNull();
     expect(await infracciones(el)).toEqual([]);
   });
 
