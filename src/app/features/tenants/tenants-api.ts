@@ -16,6 +16,12 @@ export interface Tenant {
   createdAt: string;
 }
 
+/** Esquema `CreateTenantRequest` (identity.v1.yaml 1.5.0). */
+export interface NuevoTenant {
+  name: string;
+  nit: string;
+}
+
 /** Operaciones de plataforma de Identity (RF-21, DD 10.4); solo `admin_plataforma`. */
 @Injectable({ providedIn: 'root' })
 export class TenantsApi {
@@ -24,6 +30,11 @@ export class TenantsApi {
 
   listar(): Observable<Tenant[]> {
     return this.http.get<Tenant[]>(`${this.base}/v1/platform/tenants`);
+  }
+
+  /** Crea una empresa oferente en estado `activo`; el NIT es único en la plataforma (409 `nit-registrado`). */
+  crear(tenant: NuevoTenant): Observable<Tenant> {
+    return this.http.post<Tenant>(`${this.base}/v1/platform/tenants`, tenant);
   }
 
   cambiarEstado(id: string, status: EstadoTenant): Observable<Tenant> {

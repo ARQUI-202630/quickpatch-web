@@ -1,4 +1,46 @@
-/* Gestión de tenants (SCRUM-436). Por debajo de 40rem cada fila se apila como una ficha. */
+/* Gestión de tenants (SCRUM-436) y creación (SCRUM-61). Por debajo de 40rem cada fila se apila como una ficha. */
+.lado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qp-espacio-4);
+}
+
+.aviso {
+  margin: 0;
+  padding: var(--qp-espacio-3) var(--qp-espacio-4);
+  border: 1px solid currentColor;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-exito-fondo);
+  color: var(--qp-exito);
+  font-size: var(--qp-texto-sm);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.campos {
+  display: grid;
+  gap: var(--qp-espacio-4);
+  margin-top: var(--qp-espacio-4);
+  color: var(--qp-texto);
+}
+
+.campo {
+  display: grid;
+  gap: var(--qp-espacio-1);
+
+  span {
+    color: var(--qp-texto-secundario);
+    font-size: var(--qp-texto-sm);
+  }
+
+  .numerico {
+    justify-self: end;
+  }
+}
+
 .resumen {
   display: flex;
   gap: var(--qp-espacio-4);

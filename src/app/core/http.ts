@@ -43,6 +43,7 @@ const MENSAJES: Record<string, string> = {
   'no-autenticado': 'Tu sesión terminó. Vuelve a iniciar sesión.',
   'no-encontrado': 'No encontramos lo que buscas.',
   'tenant-plataforma': 'El tenant de la plataforma no se puede desactivar.',
+  'nit-registrado': 'Ya existe un tenant con ese NIT.',
   'transicion-invalida':
     'El estado del técnico cambió y ya no admite esta acción. Revisa la lista actualizada.',
   validacion: 'Revisa los datos enviados.',
@@ -59,7 +60,27 @@ export function mensajeDeError(error: unknown): string {
   if (error.status === 0) {
     return 'No hay conexión con QUICKPATCH.';
   }
+  return MENSAJES[tipoDeError(error)] ?? 'Ocurrió un error inesperado.';
+}
+
+/** Último segmento del `type` de un Problem Details (`nit-registrado`, `validacion`…); vacío si no es de la API. */
+export function tipoDeError(error: unknown): string {
+  if (!(error instanceof HttpErrorResponse)) {
+    return '';
+  }
   const tipo = (error.error as { type?: string } | null)?.type ?? '';
-  const slug = tipo.substring(tipo.lastIndexOf('/') + 1);
-  return MENSAJES[slug] ?? 'Ocurrió un error inesperado.';
+  return tipo.substring(tipo.lastIndexOf('/') + 1);
+}
+
+/** Errores por campo de un 400 (`errors` del Problem Details): el primer mensaje de cada campo. */
+export function erroresDeCampo(error: unknown): Record<string, string> {
+  if (!(error instanceof HttpErrorResponse)) {
+    return {};
+  }
+  const errores = (error.error as { errors?: Record<string, string[]> } | null)?.errors ?? {};
+  return Object.fromEntries(
+    Object.entries(errores)
+      .filter(([, mensajes]) => Array.isArray(mensajes) && mensajes.length > 0)
+      .map(([campo, mensajes]) => [campo, mensajes[0]]),
+  );
 }
