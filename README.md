@@ -24,6 +24,7 @@ scripts/test-ci.mjs   Pruebas sin watch para el CI y el hook pre-push
 |Inicio de sesión (solo administradores; los demás roles usan la app móvil)|`admin_tenant`, `admin_plataforma`|`POST /v1/auth/login`|SCRUM-41|
 |Tenants: lista, activar y desactivar con confirmación|`admin_plataforma`|`GET /v1/platform/tenants`, `PATCH /v1/platform/tenants/{id}` (identity 1.2.0)|SCRUM-41 / SCRUM-112|
 |Inicio del administrador del tenant|`admin_tenant`|—|SCRUM-41|
+|Activar la cuenta (pública): el técnico del equipo de un proveedor define su contraseña con el enlace de invitación (`/activar#token=…`); la app móvil es el atajo|Sin sesión|`POST /v1/auth/password/setup` (identity 1.7.0)|SCRUM-463|
 
 - Las rutas se protegen por rol (`core/guards.ts`, SCRUM-25); el backend vuelve a validar el rol en cada endpoint.
 - Interceptores (`core/http.ts`): `X-Correlation-Id` y el token en las peticiones a `/api`; un 401 cierra la sesión.
