@@ -184,7 +184,7 @@ describe('features', () => {
 
       expect(pagina.querySelectorAll('tr.fila-esqueleto').length).toBe(3);
       expect(pagina.querySelector('table')?.getAttribute('aria-busy')).toBe('true');
-      expect(pagina.querySelector('[role="status"]')?.textContent).toContain('Cargando tenants');
+      expect(pagina.querySelector('.oculto[role="status"]')?.textContent).toContain('Cargando tenants');
 
       http.expectOne('/api/v1/platform/tenants').flush(tenants);
       await fixture.whenStable();

@@ -123,6 +123,18 @@ describe('accesibilidad', () => {
     expect(await infracciones(el)).toEqual([]);
   });
 
+  it('diálogo de nuevo tenant vacío y con errores por campo (SCRUM-61)', async () => {
+    const { fixture, el } = await tenantsCargados();
+    boton(el, 'Nuevo tenant').click();
+    fixture.detectChanges();
+    expect(await infracciones(el)).toEqual([]);
+
+    boton(el, 'Crear tenant').click();
+    fixture.detectChanges();
+    expect(el.querySelectorAll('dialog [aria-invalid="true"]').length).toBe(2);
+    expect(await infracciones(el)).toEqual([]);
+  });
+
   it('técnicos con datos, paginación y el diálogo de motivo con error', async () => {
     const tecnicos: TecnicoAdmin[] = Array.from({ length: 20 }, (_, i) => ({
       userId: `u${i}`,

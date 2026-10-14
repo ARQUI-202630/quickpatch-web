@@ -10,7 +10,13 @@ import { Router, UrlTree, provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { redirigirPorRol, requiereRol } from './guards';
-import { autenticacionInterceptor, correlacionInterceptor, mensajeDeError } from './http';
+import {
+  autenticacionInterceptor,
+  correlacionInterceptor,
+  erroresDeCampo,
+  mensajeDeError,
+  tipoDeError,
+} from './http';
 import { RolSinAccesoError, Sesion } from './sesion';
 
 function respuestaLogin(role: string, expiresIn = 3600) {
@@ -122,6 +128,23 @@ describe('core', () => {
     expect(mensajeDeError(new HttpErrorResponse({ status: 0 }))).toContain('conexión');
     expect(mensajeDeError(new RolSinAccesoError())).toContain('app móvil');
     expect(mensajeDeError('raro')).toBe('Ocurrió un error inesperado.');
+  });
+
+  it('lee el tipo y los errores por campo de un Problem Details', () => {
+    const validacion = new HttpErrorResponse({
+      status: 400,
+      error: {
+        type: 'https://quickpatch.internal/problems/validacion',
+        errors: { name: ['Muy corto.', 'Otro.'], nit: [], raro: 'x' },
+      },
+    });
+
+    expect(tipoDeError(validacion)).toBe('validacion');
+    expect(erroresDeCampo(validacion)).toEqual({ name: 'Muy corto.' });
+    expect(tipoDeError(new HttpErrorResponse({ status: 500, error: null }))).toBe('');
+    expect(erroresDeCampo(new HttpErrorResponse({ status: 500, error: null }))).toEqual({});
+    expect(tipoDeError('raro')).toBe('');
+    expect(erroresDeCampo('raro')).toEqual({});
   });
 
   it('los guards exigen sesión y rol', async () => {
