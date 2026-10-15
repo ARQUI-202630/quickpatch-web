@@ -10,6 +10,13 @@ export const routes: Routes = [
       import('./features/autenticacion/inicio-sesion').then((m) => m.InicioSesion),
   },
   {
+    // Pública: el técnico abre aquí el enlace de su invitación (SCRUM-463).
+    path: 'activar',
+    title: 'Activa tu cuenta · QUICKPATCH',
+    loadComponent: () =>
+      import('./features/activacion/activar-cuenta').then((m) => m.ActivarCuenta),
+  },
+  {
     path: 'inicio',
     title: 'Inicio · QUICKPATCH',
     canActivate: [requiereRol('admin_tenant', 'admin_plataforma')],

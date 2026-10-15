@@ -1,0 +1,83 @@
+/* Activación de la cuenta del técnico (SCRUM-463): una sola caja centrada; en el teléfono ocupa el ancho. */
+:host {
+  display: block;
+}
+
+.activacion {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: var(--qp-espacio-8) var(--qp-espacio-4);
+}
+
+.caja {
+  width: min(100%, 26rem);
+  padding: var(--qp-espacio-8) var(--qp-espacio-6);
+  border-radius: var(--qp-radio-md);
+  background: var(--qp-superficie);
+  box-shadow: var(--qp-sombra-md);
+
+  > .nota {
+    margin-bottom: var(--qp-espacio-6);
+  }
+}
+
+.marca {
+  margin-bottom: var(--qp-espacio-6);
+}
+
+.nombre-marca {
+  font-weight: var(--qp-peso-bold);
+  letter-spacing: var(--qp-tracking-titulo);
+}
+
+h1 {
+  margin-bottom: var(--qp-espacio-2);
+  font-size: var(--qp-texto-xl);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+form {
+  gap: var(--qp-espacio-4);
+  max-width: none;
+}
+
+.campo {
+  display: grid;
+  gap: var(--qp-espacio-2);
+}
+
+.ayuda {
+  color: var(--qp-texto-secundario);
+  font-size: var(--qp-texto-sm);
+}
+
+button[type='submit'] {
+  width: 100%;
+  margin-top: var(--qp-espacio-2);
+}
+
+.resultado {
+  p {
+    margin: 0;
+    color: var(--qp-texto-secundario);
+  }
+
+  &.exito h1 {
+    color: var(--qp-exito);
+  }
+}
+
+@media (max-width: 30rem) {
+  .activacion {
+    align-items: start;
+    padding: var(--qp-espacio-4);
+  }
+
+  .caja {
+    padding: var(--qp-espacio-6) var(--qp-espacio-4);
+  }
+}

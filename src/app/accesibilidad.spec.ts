@@ -2,11 +2,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Type } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import axe from 'axe-core';
 
 import { App } from './app';
 import { Sesion } from './core/sesion';
+import { ActivarCuenta } from './features/activacion/activar-cuenta';
 import { InicioSesion } from './features/autenticacion/inicio-sesion';
 import { Inicio } from './features/inicio/inicio';
 import { Tecnicos } from './features/tecnicos/tecnicos';
@@ -187,6 +188,58 @@ describe('accesibilidad', () => {
 
     (el.querySelector('button.abrir-menu') as HTMLButtonElement).click();
     fixture.detectChanges();
+    expect(await infracciones(el)).toEqual([]);
+  });
+});
+
+/** La página pública de activación lee el token de la ruta, así que necesita su propio módulo de pruebas. */
+describe('accesibilidad de activar cuenta', () => {
+  let http: HttpTestingController;
+
+  afterEach(() => http.verify());
+
+  function activar(fragmento: string | null) {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: { snapshot: { fragment: fragmento } } },
+      ],
+    });
+    http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(ActivarCuenta);
+    fixture.detectChanges();
+    return { fixture, el: fixture.nativeElement as HTMLElement };
+  }
+
+  it('activar cuenta: formulario con errores, éxito y enlace inválido (SCRUM-463)', async () => {
+    const { fixture, el } = activar('token=abcdefghijklmnopqrstuvwxyzABCDEFGHIJ012-_56');
+    expect(await infracciones(el)).toEqual([]);
+
+    (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+    expect(el.querySelectorAll('[aria-invalid="true"]').length).toBe(2);
+    expect(await infracciones(el)).toEqual([]);
+
+    for (const id of ['password', 'confirmacion']) {
+      const input = el.querySelector(`#${id}`) as HTMLInputElement;
+      input.value = 'Equipo.2026';
+      input.dispatchEvent(new Event('input'));
+    }
+    (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    http
+      .expectOne('/api/v1/auth/password/setup')
+      .flush(null, { status: 204, statusText: 'No Content' });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Tu cuenta quedó activa');
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('activar cuenta sin token muestra el enlace inválido accesible', async () => {
+    const { el } = activar(null);
+    expect(el.textContent).toContain('Este enlace ya no sirve');
     expect(await infracciones(el)).toEqual([]);
   });
 });
