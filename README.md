@@ -22,7 +22,8 @@ scripts/test-ci.mjs   Pruebas sin watch para el CI y el hook pre-push
 |Pantalla|Rol|Contrato|Historia|
 |---|---|---|---|
 |Inicio de sesión (solo administradores; los demás roles usan la app móvil)|`admin_tenant`, `admin_plataforma`|`POST /v1/auth/login`|SCRUM-41|
-|Tenants: lista, activar y desactivar con confirmación|`admin_plataforma`|`GET /v1/platform/tenants`, `PATCH /v1/platform/tenants/{id}` (identity 1.2.0)|SCRUM-41 / SCRUM-112|
+|Tenants: lista, crear con nombre y NIT, activar y desactivar con confirmación|`admin_plataforma`|`GET /v1/platform/tenants` y `PATCH /v1/platform/tenants/{id}` (identity 1.2.0); `POST /v1/platform/tenants` (identity 1.5.0)|SCRUM-41 / SCRUM-112; SCRUM-24 / SCRUM-61|
+|Técnicos y proveedores del tenant: lista por estado de verificación con paginación; aprobar, rechazar, suspender y reactivar con confirmación y motivo|`admin_tenant`|`GET /v1/admin/technicians`, `POST /v1/admin/technicians/{userId}/approve`, `/reject` y `/suspend` (identity 1.3.0); `GET /v1/catalog/categories` para la especialidad|SCRUM-39 / SCRUM-107; SCRUM-40 / SCRUM-110|
 |Inicio del administrador del tenant|`admin_tenant`|—|SCRUM-41|
 |Activar la cuenta (pública): el técnico del equipo de un proveedor define su contraseña con el enlace de invitación (`/activar#token=…`); la app móvil es el atajo|Sin sesión|`POST /v1/auth/password/setup` (identity 1.7.0)|SCRUM-463|
 
