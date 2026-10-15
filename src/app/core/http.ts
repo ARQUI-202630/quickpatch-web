@@ -39,6 +39,7 @@ const MENSAJES: Record<string, string> = {
   'credenciales-invalidas': 'El correo o la contraseña no son correctos.',
   'cuenta-bloqueada': 'Tu cuenta está bloqueada temporalmente por intentos fallidos.',
   'tenant-inactivo': 'La empresa está inactiva.',
+  'canal-sin-tenant': 'El servicio no está disponible en este momento. Intenta más tarde.',
   'no-autorizado': 'No tienes permiso para hacer esta acción.',
   'no-autenticado': 'Tu sesión terminó. Vuelve a iniciar sesión.',
   'no-encontrado': 'No encontramos lo que buscas.',
