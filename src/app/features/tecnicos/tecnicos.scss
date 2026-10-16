@@ -91,6 +91,12 @@ button.filtro {
     border-color: var(--qp-color-primario);
     background: var(--qp-color-primario);
     color: var(--qp-texto-sobre-primario);
+
+    // Sin esta regla, el :hover de arriba (más específico) deja el texto blanco sobre fondo claro.
+    &:hover:not(:disabled) {
+      border-color: var(--qp-color-primario-hover);
+      background: var(--qp-color-primario-hover);
+    }
   }
 }
 
