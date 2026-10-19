@@ -20,6 +20,9 @@ export type EstadoSolicitud = (typeof ESTADOS_SOLICITUD)[number];
 /** Estados de una solicitud que sigue en curso (RF-18: «solicitudes activas»). */
 export const ESTADOS_ACTIVOS: readonly EstadoSolicitud[] = ESTADOS_SOLICITUD.slice(0, 6);
 
+/** Estados anteriores al inicio del servicio, desde los que se puede cancelar (RN-SR7, service-request 1.5.0). */
+export const ESTADOS_CANCELABLES: readonly EstadoSolicitud[] = ESTADOS_SOLICITUD.slice(0, 5);
+
 /** Estados en los que la solicitud ya terminó. */
 export const ESTADOS_CERRADOS: readonly EstadoSolicitud[] = ESTADOS_SOLICITUD.slice(6);
 

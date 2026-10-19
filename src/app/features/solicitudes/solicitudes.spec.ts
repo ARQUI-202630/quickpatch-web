@@ -196,6 +196,165 @@ describe('Solicitudes', () => {
       expect(celda?.querySelector('code')?.getAttribute('title')).toBe(CLIENTE);
     });
 
+    describe('cancelación (RF-36, SCRUM-477)', () => {
+      function cancelacion() {
+        return http.expectOne(
+          (req) => req.method === 'POST' && req.url === '/api/v1/service-requests/s1/cancel',
+        );
+      }
+
+      async function abrirDialogo(fixture: ComponentFixture<SolicitudesTenant>, el: HTMLElement) {
+        boton(el, 'Cancelar').click();
+        fixture.detectChanges();
+        expect(el.querySelector('dialog')?.hasAttribute('open')).toBe(true);
+      }
+
+      function escribir(
+        fixture: ComponentFixture<SolicitudesTenant>,
+        el: HTMLElement,
+        valor: string,
+      ) {
+        const campo = el.querySelector<HTMLTextAreaElement>('#motivo-cancelacion')!;
+        campo.value = valor;
+        campo.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+      }
+
+      it('solo ofrece cancelar antes de que inicie el servicio', async () => {
+        const estados = [
+          'buscando_tecnico',
+          'en_espera',
+          'asignado',
+          'cotizado',
+          'cotizacion_aceptada',
+          'en_progreso',
+          'completado',
+          'pagado',
+          'cancelado',
+        ] as const;
+        const { el } = await cargado(
+          resumen(),
+          pagina(estados.map((status, i) => solicitud(`s${i}`, { status }))),
+        );
+        const conBoton = Array.from(el.querySelectorAll('tbody tr')).map(
+          (fila) => fila.querySelector('td.acciones button') !== null,
+        );
+        expect(conBoton).toEqual([true, true, true, true, true, false, false, false, false]);
+        expect(el.querySelector('td.acciones button')?.getAttribute('aria-label')).toBe(
+          'Cancelar la solicitud de Plomería del cliente 3c4d5e6f',
+        );
+      });
+
+      it('pide un motivo de 5 a 500 caracteres antes de llamar al backend', async () => {
+        const { fixture, el } = await cargado();
+        await abrirDialogo(fixture, el);
+        escribir(fixture, el, ' no ');
+
+        boton(el, 'Sí, cancelar').click();
+        await estable(fixture);
+
+        http.expectNone((req) => req.method === 'POST');
+        expect(texto(el.querySelector('#motivo-cancelacion-error'))).toBe(
+          'Escribe un motivo de 5 a 500 caracteres.',
+        );
+        expect(el.querySelector('#motivo-cancelacion')?.getAttribute('aria-invalid')).toBe('true');
+      });
+
+      it('cancela con el motivo sin espacios, cierra el diálogo y actualiza conteos y lista', async () => {
+        const { fixture, el } = await cargado();
+        await abrirDialogo(fixture, el);
+        expect(texto(el.querySelector('dialog .cuerpo p'))).toContain('se deja de buscar técnico');
+        escribir(fixture, el, '  Cliente sin respuesta.  ');
+
+        boton(el, 'Sí, cancelar').click();
+        const req = cancelacion();
+        expect(req.request.body).toEqual({ reason: 'Cliente sin respuesta.' });
+        expect(req.request.body).not.toHaveProperty('tenantId');
+        req.flush({
+          id: 's1',
+          status: 'cancelado',
+          cancelledAt: '2026-10-19T16:20:00Z',
+          cancelledByType: 'admin_tenant',
+        });
+        await estable(fixture);
+        resumenTenant().flush(resumen({ cancelado: 1 }));
+        lista().flush(pagina([solicitud('s1', { status: 'cancelado' })]));
+        await estable(fixture);
+
+        expect(el.querySelector('dialog')?.hasAttribute('open')).toBe(false);
+        expect(texto(el.querySelector('p.oculto[role="status"]'))).toBe(
+          'Solicitud del cliente 3c4d5e6f cancelada.',
+        );
+        expect(el.querySelector('td.acciones button')).toBeNull();
+      });
+
+      it('un 409 avisa que ya no se puede cancelar y actualiza la lista', async () => {
+        const { fixture, el } = await cargado(
+          resumen(),
+          pagina([solicitud('s1', { status: 'asignado', technicianId: TECNICO })]),
+        );
+        await abrirDialogo(fixture, el);
+        expect(texto(el.querySelector('dialog .cuerpo p'))).toContain(
+          'el técnico asignado queda libre',
+        );
+        escribir(fixture, el, 'Cliente sin respuesta.');
+
+        boton(el, 'Sí, cancelar').click();
+        cancelacion().flush(
+          {
+            type: 'https://quickpatch.internal/problems/transicion-invalida',
+            title: 'La solicitud ya no se puede cancelar',
+            status: 409,
+          },
+          { status: 409, statusText: 'Conflict' },
+        );
+        await estable(fixture);
+        resumenTenant().flush(resumen({ en_progreso: 1 }));
+        lista().flush(pagina([solicitud('s1', { status: 'en_progreso', technicianId: TECNICO })]));
+        await estable(fixture);
+
+        expect(el.querySelector('dialog')?.hasAttribute('open')).toBe(false);
+        expect(texto(el.querySelector('p.alerta[role="alert"]'))).toBe(
+          'La solicitud ya no se puede cancelar: el servicio inició o ya estaba cancelada.',
+        );
+        expect(el.querySelector('td.acciones button')).toBeNull();
+      });
+
+      it('un 400 de reason se muestra en el campo y el diálogo sigue abierto', async () => {
+        const { fixture, el } = await cargado();
+        await abrirDialogo(fixture, el);
+        escribir(fixture, el, 'Cliente sin respuesta.');
+
+        boton(el, 'Sí, cancelar').click();
+        cancelacion().flush(
+          {
+            type: 'https://quickpatch.internal/problems/validacion',
+            title: 'La solicitud tiene datos inválidos',
+            status: 400,
+            errors: { reason: ['El motivo debe tener entre 5 y 500 caracteres.'] },
+          },
+          { status: 400, statusText: 'Bad Request' },
+        );
+        await estable(fixture);
+
+        expect(texto(el.querySelector('#motivo-cancelacion-error'))).toBe(
+          'El motivo debe tener entre 5 y 500 caracteres.',
+        );
+        expect(el.querySelector('dialog')?.hasAttribute('open')).toBe(true);
+      });
+
+      it('volver cierra el diálogo sin cancelar', async () => {
+        const { fixture, el } = await cargado();
+        await abrirDialogo(fixture, el);
+
+        boton(el, 'Volver').click();
+        fixture.detectChanges();
+
+        http.expectNone((req) => req.method === 'POST');
+        expect(el.querySelector('dialog')?.hasAttribute('open')).toBe(false);
+      });
+    });
+
     it('pide los técnicos de a 100 hasta tenerlos todos', async () => {
       const { fixture, el } = crear(SolicitudesTenant);
       http.expectOne('/api/v1/catalog/categories').flush([]);

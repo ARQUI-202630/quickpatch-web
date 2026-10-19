@@ -216,6 +216,17 @@ describe('accesibilidad', () => {
     expect(el.querySelector('.paginacion')).not.toBeNull();
     expect(await infracciones(el)).toEqual([]);
 
+    // Diálogo de cancelación con el error del motivo (SCRUM-477).
+    (el.querySelector('td.acciones button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (el.querySelector('dialog button.confirmar') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('#motivo-cancelacion-error')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+    (el.querySelector('dialog button.secundario') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
     (el.querySelector('button.conteo') as HTMLButtonElement).click();
     http
       .expectOne((req) => req.url === '/api/v1/service-requests')

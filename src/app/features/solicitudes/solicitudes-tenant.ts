@@ -1,10 +1,13 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
-import { mensajeDeError } from '../../core/http';
+import { erroresDeCampo, mensajeDeError, tipoDeError } from '../../core/http';
+import { DialogoConfirmacion } from '../../shared/dialogo-confirmacion';
 import {
   ESTADOS_ACTIVOS,
+  ESTADOS_CANCELABLES,
   ESTADOS_CERRADOS,
   EstadoSolicitud,
   EstadoSolicitudInsignia,
@@ -12,7 +15,13 @@ import {
 } from '../../shared/estado-solicitud';
 import { Icono } from '../../shared/icono';
 import { actualizarCadaMinuto } from './actualizacion';
-import { ResumenSolicitudes, SolicitudAdmin, SolicitudesApi } from './solicitudes-api';
+import {
+  MOTIVO_CANCELACION_MAX,
+  MOTIVO_CANCELACION_MIN,
+  ResumenSolicitudes,
+  SolicitudAdmin,
+  SolicitudesApi,
+} from './solicitudes-api';
 
 export const TAMANO_PAGINA = 20;
 
@@ -28,14 +37,20 @@ export function idCorto(id: string): string {
  * Solicitudes del tenant para su administrador (RF-18, SCRUM-104): conteos por estado, separados en activas y cerradas,
  * las creadas hoy y la lista paginada, filtrable por estado al tocar un conteo. Se actualiza cada minuto; si una
  * actualización falla, se conservan los datos anteriores con un aviso.
+ *
+ * Una solicitud que todavía no inició se puede cancelar con un motivo (RF-36, SCRUM-477); la cancelación queda en la
+ * auditoría del servicio y el backend vuelve a validar el estado.
  */
 @Component({
   selector: 'app-solicitudes-tenant',
-  imports: [DatePipe, EstadoSolicitudInsignia, Icono],
+  imports: [DatePipe, DialogoConfirmacion, EstadoSolicitudInsignia, Icono],
   styleUrl: './solicitudes.scss',
   template: `
     @if (error()) {
       <p class="alerta" role="alert">{{ error() }}</p>
+    }
+    @if (conflicto()) {
+      <p class="alerta" role="alert">{{ conflicto() }}</p>
     }
     <p class="oculto" role="status">{{ aviso() }}</p>
 
@@ -105,6 +120,7 @@ export function idCorto(id: string): string {
             <th scope="col">Técnico</th>
             <th scope="col">Creada</th>
             <th scope="col">Asignada</th>
+            <th scope="col"><span class="oculto">Acciones</span></th>
           </tr>
         </thead>
         <tbody>
@@ -117,6 +133,7 @@ export function idCorto(id: string): string {
                 <td><span class="esqueleto ancho-sm"></span></td>
                 <td><span class="esqueleto ancho-md"></span></td>
                 <td><span class="esqueleto ancho-md"></span></td>
+                <td></td>
               </tr>
             }
           } @else {
@@ -163,10 +180,27 @@ export function idCorto(id: string): string {
                     <span class="secundario">—</span>
                   }
                 </td>
+                <td class="acciones">
+                  @if (cancelable(s)) {
+                    <button
+                      type="button"
+                      class="secundario peligro"
+                      [attr.aria-label]="
+                        'Cancelar la solicitud de ' +
+                        categoria(s.categoryId) +
+                        ' del cliente ' +
+                        corto(s.clientId)
+                      "
+                      (click)="pedirCancelacion(s)"
+                    >
+                      Cancelar
+                    </button>
+                  }
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="6">
+                <td colspan="7">
                   <div class="vacio">
                     <strong>{{ textoVacio() }}</strong>
                     <span>Las solicitudes aparecen aquí cuando los clientes las crean.</span>
@@ -204,6 +238,55 @@ export function idCorto(id: string): string {
         </nav>
       }
     </section>
+
+    <app-dialogo-confirmacion
+      [abierto]="porCancelar() !== null"
+      titulo="¿Cancelar esta solicitud?"
+      textoConfirmar="Sí, cancelar"
+      textoCancelar="Volver"
+      [peligro]="true"
+      [ocupado]="cancelando()"
+      (confirmar)="confirmarCancelacion()"
+      (cancelar)="cerrarCancelacion()"
+    >
+      @if (porCancelar(); as s) {
+        <p>
+          La solicitud de {{ categoria(s.categoryId) }} del cliente {{ corto(s.clientId) }} pasa a
+          cancelada:
+          {{
+            s.technicianId
+              ? 'el técnico asignado queda libre para otros servicios.'
+              : 'se deja de buscar técnico.'
+          }}
+          El cliente verá el motivo y la acción queda en la auditoría. No se puede deshacer.
+        </p>
+        <div class="campo-motivo">
+          <label for="motivo-cancelacion">Motivo</label>
+          <textarea
+            id="motivo-cancelacion"
+            rows="3"
+            [attr.maxlength]="motivoMax"
+            [attr.aria-invalid]="errorMotivo() !== null"
+            [attr.aria-describedby]="
+              errorMotivo()
+                ? 'motivo-cancelacion-error motivo-cancelacion-cuenta'
+                : 'motivo-cancelacion-cuenta'
+            "
+            [value]="motivo()"
+            (input)="escribirMotivo($event)"
+          ></textarea>
+          <span id="motivo-cancelacion-cuenta" class="secundario numerico"
+            >{{ motivo().trim().length }}/{{ motivoMax }}</span
+          >
+          @if (errorMotivo()) {
+            <p id="motivo-cancelacion-error" class="error-campo">{{ errorMotivo() }}</p>
+          }
+        </div>
+        @if (errorCancelacion()) {
+          <p class="alerta" role="alert">{{ errorCancelacion() }}</p>
+        }
+      }
+    </app-dialogo-confirmacion>
   `,
 })
 export class SolicitudesTenant implements OnInit {
@@ -213,6 +296,7 @@ export class SolicitudesTenant implements OnInit {
   protected readonly cerrados = ESTADOS_CERRADOS;
   protected readonly filasEsqueleto = [1, 2, 3];
   protected readonly corto = idCorto;
+  protected readonly motivoMax = MOTIVO_CANCELACION_MAX;
 
   protected readonly resumen = signal<ResumenSolicitudes | null>(null);
   protected readonly estado = signal<EstadoSolicitud | null>(null);
@@ -226,6 +310,14 @@ export class SolicitudesTenant implements OnInit {
   protected readonly aviso = signal('');
   private readonly categorias = signal<ReadonlyMap<string, string>>(new Map());
   private readonly tecnicos = signal<ReadonlyMap<string, string>>(new Map());
+
+  protected readonly porCancelar = signal<SolicitudAdmin | null>(null);
+  protected readonly motivo = signal('');
+  protected readonly errorMotivo = signal<string | null>(null);
+  protected readonly errorCancelacion = signal<string | null>(null);
+  protected readonly cancelando = signal(false);
+  /** Aviso visible cuando la cancelación llegó tarde (409); se quita al pedir otra. */
+  protected readonly conflicto = signal<string | null>(null);
 
   protected readonly totalPaginas = computed(() =>
     Math.max(1, Math.ceil(this.total() / TAMANO_PAGINA)),
@@ -283,6 +375,74 @@ export class SolicitudesTenant implements OnInit {
       this.aviso.set('ID del cliente copiado.');
     } catch {
       this.aviso.set('No se pudo copiar el ID.');
+    }
+  }
+
+  protected cancelable(s: SolicitudAdmin): boolean {
+    return ESTADOS_CANCELABLES.includes(s.status);
+  }
+
+  pedirCancelacion(s: SolicitudAdmin): void {
+    this.motivo.set('');
+    this.errorMotivo.set(null);
+    this.errorCancelacion.set(null);
+    this.conflicto.set(null);
+    this.porCancelar.set(s);
+  }
+
+  cerrarCancelacion(): void {
+    this.porCancelar.set(null);
+  }
+
+  protected escribirMotivo(evento: Event): void {
+    this.motivo.set((evento.target as HTMLTextAreaElement).value);
+    this.errorMotivo.set(null);
+  }
+
+  /**
+   * Cancela con el motivo sin espacios. Un 409 significa que el servicio ya inició o que alguien la canceló antes: se
+   * cierra el diálogo y se actualiza la lista para mostrar el estado real.
+   */
+  async confirmarCancelacion(): Promise<void> {
+    const solicitud = this.porCancelar();
+    if (!solicitud) {
+      return;
+    }
+    const motivo = this.motivo().trim();
+    if (motivo.length < MOTIVO_CANCELACION_MIN || motivo.length > MOTIVO_CANCELACION_MAX) {
+      this.errorMotivo.set(
+        `Escribe un motivo de ${MOTIVO_CANCELACION_MIN} a ${MOTIVO_CANCELACION_MAX} caracteres.`,
+      );
+      return;
+    }
+    this.cancelando.set(true);
+    this.errorCancelacion.set(null);
+    try {
+      await firstValueFrom(this.api.cancelar(solicitud.id, motivo));
+      this.porCancelar.set(null);
+      this.aviso.set(`Solicitud del cliente ${idCorto(solicitud.clientId)} cancelada.`);
+      await this.actualizar();
+    } catch (e) {
+      if (
+        e instanceof HttpErrorResponse &&
+        e.status === 409 &&
+        tipoDeError(e) === 'transicion-invalida'
+      ) {
+        this.porCancelar.set(null);
+        this.conflicto.set(
+          'La solicitud ya no se puede cancelar: el servicio inició o ya estaba cancelada.',
+        );
+        await this.actualizar();
+      } else {
+        const campo = erroresDeCampo(e)['reason'];
+        if (campo) {
+          this.errorMotivo.set(campo);
+        } else {
+          this.errorCancelacion.set(mensajeDeError(e));
+        }
+      }
+    } finally {
+      this.cancelando.set(false);
     }
   }
 
