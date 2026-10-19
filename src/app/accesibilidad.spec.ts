@@ -225,6 +225,57 @@ describe('accesibilidad', () => {
     expect(await infracciones(el)).toEqual([]);
   });
 
+  it('diálogo de cancelación de una solicitud con el error del motivo (SCRUM-477)', async () => {
+    const { fixture, el } = crear(SolicitudesTenant);
+    http.expectOne('/api/v1/catalog/categories').flush([{ id: 'c1', name: 'Plomería' }]);
+    http
+      .expectOne((req) => req.url === '/api/v1/admin/technicians')
+      .flush({ items: [], page: 1, size: 100, totalItems: 0 });
+    http.expectOne('/api/v1/admin/service-requests/summary').flush({
+      generatedAt: '2026-10-18T16:00:00Z',
+      byStatus: {
+        buscando_tecnico: 1,
+        en_espera: 0,
+        asignado: 0,
+        cotizado: 0,
+        cotizacion_aceptada: 0,
+        en_progreso: 0,
+        completado: 0,
+        pagado: 0,
+        cancelado: 0,
+      },
+      createdToday: 1,
+    });
+    http
+      .expectOne((req) => req.url === '/api/v1/service-requests')
+      .flush({
+        items: [
+          {
+            id: 's1',
+            status: 'buscando_tecnico',
+            categoryId: 'c1',
+            clientId: 'cliente-1',
+            technicianId: null,
+            createdAt: '2026-10-14T15:02:11Z',
+            assignedAt: null,
+          },
+        ],
+        page: 1,
+        size: 20,
+        totalItems: 1,
+      });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    (el.querySelector('td.acciones button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (el.querySelector('dialog button.confirmar') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('#motivo-cancelacion-error')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+  });
+
   it('conteos de solicitudes por tenant de la plataforma (SCRUM-104)', async () => {
     const { fixture, el } = crear(SolicitudesPlataforma);
     expect(await infracciones(el)).toEqual([]);

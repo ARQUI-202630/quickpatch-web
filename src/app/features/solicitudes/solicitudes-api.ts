@@ -16,6 +16,18 @@ export interface SolicitudAdmin {
   assignedAt: string | null;
 }
 
+/** Esquema `CancelledServiceRequest` (1.5.0). */
+export interface SolicitudCancelada {
+  id: string;
+  status: 'cancelado';
+  cancelledAt: string;
+  cancelledByType: 'cliente' | 'admin_tenant';
+}
+
+/** Límites del motivo (`CancelServiceRequest`, 1.5.0). */
+export const MOTIVO_CANCELACION_MIN = 5;
+export const MOTIVO_CANCELACION_MAX = 500;
+
 /** Esquema `AdminServiceRequestPage`. */
 export interface PaginaSolicitudes {
   items: SolicitudAdmin[];
@@ -104,6 +116,16 @@ export class SolicitudesApi {
     const params = tenantId ? new HttpParams().set('tenantId', tenantId) : undefined;
     return this.http.get<ResumenPlataforma>(`${this.base}/v1/platform/service-requests/summary`, {
       params,
+    });
+  }
+
+  /**
+   * Cancela una solicitud del tenant antes de que inicie el servicio (RF-36, `POST /v1/service-requests/{id}/cancel`).
+   * El tenant sale del token; queda en la auditoría como `cancelar_solicitud_admin`.
+   */
+  cancelar(id: string, motivo: string): Observable<SolicitudCancelada> {
+    return this.http.post<SolicitudCancelada>(`${this.base}/v1/service-requests/${id}/cancel`, {
+      reason: motivo,
     });
   }
 
