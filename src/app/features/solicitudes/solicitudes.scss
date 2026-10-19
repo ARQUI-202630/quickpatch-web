@@ -1,0 +1,271 @@
+/* Panel de solicitudes (SCRUM-104). La tabla sigue el patrón de técnicos; por debajo de 40rem cada fila se apila. */
+:host {
+  display: grid;
+  gap: var(--qp-espacio-6);
+  min-width: 0; /* la tabla ancha se desplaza dentro de su tarjeta */
+}
+
+.tarjeta {
+  max-width: none;
+  margin: 0;
+}
+
+.secundario {
+  color: var(--qp-texto-secundario);
+  font-size: var(--qp-texto-xs);
+}
+
+/* ── Conteos del tenant ──────────────────────────────────────────────────── */
+.conteos {
+  display: grid;
+  gap: var(--qp-espacio-4);
+}
+
+.cabecera-conteos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--qp-espacio-2);
+
+  h3 {
+    margin: 0;
+    font-size: var(--qp-texto-lg);
+  }
+}
+
+.grupo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--qp-espacio-3);
+}
+
+button.conteo {
+  display: grid;
+  justify-items: start;
+  gap: var(--qp-espacio-1);
+  min-height: auto;
+  padding: var(--qp-espacio-3) var(--qp-espacio-4);
+  border: 1px solid var(--qp-borde);
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-superficie);
+  color: var(--qp-texto);
+  text-align: left;
+
+  &:hover:not(:disabled) {
+    background: var(--qp-superficie-hover);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--qp-color-primario);
+    box-shadow: inset 0 0 0 1px var(--qp-color-primario);
+  }
+
+  .cifra {
+    font-size: var(--qp-texto-2xl);
+    font-weight: var(--qp-peso-bold);
+    line-height: var(--qp-interlineado-titulo);
+  }
+
+  .etiqueta {
+    color: var(--qp-texto-secundario);
+    font-size: var(--qp-texto-sm);
+  }
+}
+
+.cerradas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qp-espacio-2);
+  padding-top: var(--qp-espacio-4);
+  border-top: 1px solid var(--qp-borde);
+  font-size: var(--qp-texto-sm);
+}
+
+button.filtro {
+  display: inline-flex;
+  gap: var(--qp-espacio-2);
+  min-height: auto;
+  padding: var(--qp-espacio-1) var(--qp-espacio-3);
+  border: 1px solid var(--qp-borde-fuerte);
+  border-radius: var(--qp-radio-pildora);
+  background: var(--qp-superficie);
+  color: var(--qp-texto-secundario);
+
+  &:hover:not(:disabled) {
+    background: var(--qp-superficie-hover);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--qp-color-primario);
+    background: var(--qp-color-primario);
+    color: var(--qp-texto-sobre-primario);
+  }
+}
+
+/* ── Tabla ───────────────────────────────────────────────────────────────── */
+.contenedor-tabla {
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+.desplazable {
+  overflow-x: auto;
+}
+
+.herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qp-espacio-3);
+  padding: var(--qp-espacio-4) var(--qp-espacio-6);
+  border-bottom: 1px solid var(--qp-borde);
+  font-size: var(--qp-texto-sm);
+  font-weight: var(--qp-peso-medio);
+}
+
+.hoy,
+.actualizado {
+  margin-left: auto;
+  font-weight: var(--qp-peso-normal);
+}
+
+select {
+  min-height: var(--qp-alto-control);
+  padding: var(--qp-espacio-2) var(--qp-espacio-3);
+  border: 1px solid var(--qp-borde-fuerte);
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-superficie);
+  color: var(--qp-texto);
+  font: inherit;
+
+  &:focus-visible {
+    border-color: var(--qp-foco);
+    outline-offset: 0;
+  }
+}
+
+th:first-child,
+td:first-child {
+  padding-left: var(--qp-espacio-6);
+}
+
+th:last-child,
+td:last-child {
+  padding-right: var(--qp-espacio-6);
+}
+
+tbody tr:last-child > * {
+  border-bottom: none;
+}
+
+tbody th {
+  font-weight: var(--qp-peso-semibold);
+  text-align: left;
+}
+
+.cifra {
+  text-align: right;
+}
+
+.id {
+  display: inline-flex;
+  align-items: center;
+}
+
+.boton-icono.copiar {
+  width: 2rem;
+  min-height: 2rem;
+}
+
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qp-espacio-3);
+  padding: var(--qp-espacio-4) var(--qp-espacio-6);
+  border-top: 1px solid var(--qp-borde);
+  color: var(--qp-texto-secundario);
+  font-size: var(--qp-texto-sm);
+
+  div {
+    display: flex;
+    gap: var(--qp-espacio-2);
+  }
+}
+
+.ancho-xs {
+  width: 1.5rem;
+  margin-left: auto;
+}
+
+.ancho-sm {
+  width: 4rem;
+}
+
+.ancho-md {
+  width: 6rem;
+}
+
+.ancho-lg {
+  width: 10rem;
+}
+
+@media (max-width: 40rem) {
+  thead {
+    display: none;
+  }
+
+  table,
+  tbody,
+  tr {
+    display: block;
+  }
+
+  tbody tr {
+    display: grid;
+    gap: var(--qp-espacio-2);
+    padding: var(--qp-espacio-4);
+    border-bottom: 1px solid var(--qp-borde);
+  }
+
+  tbody td,
+  tbody th,
+  tbody td:first-child,
+  tbody th:first-child,
+  tbody td:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qp-espacio-4);
+    padding: 0;
+    border: none;
+  }
+
+  [data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    color: var(--qp-texto-secundario);
+    font-weight: var(--qp-peso-normal);
+  }
+
+  tbody th[data-etiqueta='Tenant']::before {
+    content: none;
+  }
+
+  .hoy,
+  .actualizado {
+    margin-left: 0;
+  }
+
+  .herramientas,
+  .paginacion {
+    padding-inline: var(--qp-espacio-4);
+  }
+
+  .fila-esqueleto td:empty {
+    display: none;
+  }
+}

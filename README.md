@@ -24,6 +24,8 @@ scripts/test-ci.mjs   Pruebas sin watch para el CI y el hook pre-push
 |Inicio de sesión (solo administradores; los demás roles usan la app móvil)|`admin_tenant`, `admin_plataforma`|`POST /v1/auth/login`|SCRUM-41|
 |Tenants: lista, crear con nombre y NIT, activar y desactivar con confirmación|`admin_plataforma`|`GET /v1/platform/tenants` y `PATCH /v1/platform/tenants/{id}` (identity 1.2.0); `POST /v1/platform/tenants` (identity 1.5.0)|SCRUM-41 / SCRUM-112; SCRUM-24 / SCRUM-61|
 |Técnicos y proveedores del tenant: lista por estado de verificación con paginación; aprobar, rechazar, suspender y reactivar con confirmación y motivo|`admin_tenant`|`GET /v1/admin/technicians`, `POST /v1/admin/technicians/{userId}/approve`, `/reject` y `/suspend` (identity 1.3.0); `GET /v1/catalog/categories` para la especialidad|SCRUM-39 / SCRUM-107; SCRUM-40 / SCRUM-110|
+|Solicitudes (panel operativo): conteos por estado, activas y cerradas, y creadas hoy; lista paginada filtrable por estado con el nombre del técnico; se actualiza cada minuto|`admin_tenant`|`GET /v1/service-requests` y `GET /v1/admin/service-requests/summary` (service-request 1.4.0); `GET /v1/admin/technicians` para el nombre del técnico; `GET /v1/catalog/categories` para la categoría|SCRUM-38 / SCRUM-104|
+|Solicitudes por tenant: solo conteos por estado, filtrables por tenant; los tenants sin solicitudes salen en 0|`admin_plataforma`|`GET /v1/platform/service-requests/summary` (service-request 1.4.0); `GET /v1/platform/tenants` para el nombre|SCRUM-38 / SCRUM-104|
 |Inicio del administrador del tenant|`admin_tenant`|—|SCRUM-41|
 |Activar la cuenta (pública): el técnico del equipo de un proveedor define su contraseña con el enlace de invitación (`/activar#token=…`); la app móvil es el atajo|Sin sesión|`POST /v1/auth/password/setup` (identity 1.7.0)|SCRUM-463|
 
@@ -64,7 +66,7 @@ Objetivo: WCAG 2.2 AA (SCRUM-438).
 
 - **Teclado y foco:** «Saltar al contenido» es el primer enlace. Al cambiar de ruta el foco pasa al contenido (`#contenido`). El panel deslizable lleva el foco a «Cerrar menú», deja inerte el resto de la página y al cerrarse (botón, velo o Escape) devuelve el foco a «Abrir menú». El diálogo de confirmación abre con el foco en «Cancelar» y se cierra con Escape.
 - **Formularios:** cada campo tiene etiqueta; los errores se enlazan con `aria-describedby` y marcan `aria-invalid`. Los errores del servidor usan `role="alert"` y las cargas `role="status"`.
-- **Pruebas automáticas:** `src/app/accesibilidad.spec.ts` pasa axe-core (reglas WCAG 2.x A y AA) por cada pantalla y estado: inicio de sesión con errores, inicio, tenants cargando, con datos, vacío y sin resultados, diálogo con error y shell con el menú abierto. El contraste lo cubre `contraste.spec.ts`, porque jsdom no calcula estilos.
+- **Pruebas automáticas:** `src/app/accesibilidad.spec.ts` pasa axe-core (reglas WCAG 2.x A y AA) por cada pantalla y estado: inicio de sesión con errores, inicio, tenants cargando, con datos, vacío y sin resultados, diálogo con error, solicitudes del tenant con datos y filtro, conteos por tenant y shell con el menú abierto. El contraste lo cubre `contraste.spec.ts`, porque jsdom no calcula estilos.
 - **Pendiente manual:** revisar con lector de pantalla (NVDA o VoiceOver) y zoom al 200 % antes de cada entrega.
 
 ## Comandos

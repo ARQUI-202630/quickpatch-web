@@ -184,7 +184,9 @@ describe('features', () => {
 
       expect(pagina.querySelectorAll('tr.fila-esqueleto').length).toBe(3);
       expect(pagina.querySelector('table')?.getAttribute('aria-busy')).toBe('true');
-      expect(pagina.querySelector('.oculto[role="status"]')?.textContent).toContain('Cargando tenants');
+      expect(pagina.querySelector('.oculto[role="status"]')?.textContent).toContain(
+        'Cargando tenants',
+      );
 
       http.expectOne('/api/v1/platform/tenants').flush(tenants);
       await fixture.whenStable();
@@ -325,10 +327,12 @@ describe('features', () => {
 
     expect(texto(fixture.nativeElement as HTMLElement)).toContain('Hola, Ana Admin');
     const capacidades = fixture.nativeElement.querySelectorAll('.capacidades li');
-    expect(capacidades.length).toBe(3);
-    expect(texto(capacidades[0] as HTMLElement)).toContain('Técnicos');
-    expect(capacidades[0].querySelector('a')?.getAttribute('href')).toBe('/tecnicos');
-    expect(texto(capacidades[0] as HTMLElement)).not.toContain('Próximamente');
-    expect(texto(capacidades[1] as HTMLElement)).toContain('Próximamente');
+    expect(capacidades.length).toBe(4);
+    expect(texto(capacidades[0] as HTMLElement)).toContain('Solicitudes');
+    expect(capacidades[0].querySelector('a')?.getAttribute('href')).toBe('/solicitudes');
+    expect(texto(capacidades[1] as HTMLElement)).toContain('Técnicos');
+    expect(capacidades[1].querySelector('a')?.getAttribute('href')).toBe('/tecnicos');
+    expect(texto(capacidades[1] as HTMLElement)).not.toContain('Próximamente');
+    expect(texto(capacidades[2] as HTMLElement)).toContain('Próximamente');
   });
 });

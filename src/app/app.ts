@@ -25,6 +25,12 @@ interface Enlace {
 /** Navegación principal: cada enlace solo aparece para los roles que su ruta admite (app.routes.ts). */
 const ENLACES: readonly Enlace[] = [
   { ruta: '/inicio', etiqueta: 'Inicio', icono: 'inicio', roles: ['admin_tenant'] },
+  {
+    ruta: '/solicitudes',
+    etiqueta: 'Solicitudes',
+    icono: 'solicitudes',
+    roles: ['admin_tenant', 'admin_plataforma'],
+  },
   { ruta: '/tecnicos', etiqueta: 'Técnicos', icono: 'tecnicos', roles: ['admin_tenant'] },
   { ruta: '/tenants', etiqueta: 'Tenants', icono: 'tenants', roles: ['admin_plataforma'] },
 ];

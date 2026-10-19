@@ -14,6 +14,11 @@ interface Capacidad {
 /** Capacidades del administrador del tenant; las que aún no tienen ruta llegan en próximas historias. */
 const CAPACIDADES: readonly Capacidad[] = [
   {
+    titulo: 'Solicitudes',
+    detalle: 'Solicitudes de servicio de tu empresa por estado.',
+    ruta: '/solicitudes',
+  },
+  {
     titulo: 'Técnicos',
     detalle: 'Aprobar o rechazar el registro de técnicos y proveedores, y suspender cuentas.',
     ruta: '/tecnicos',
@@ -28,7 +33,7 @@ const CAPACIDADES: readonly Capacidad[] = [
   },
 ];
 
-/** Inicio del administrador del tenant: sus capacidades (técnicos, catálogo, reportes) y cuáles ya están disponibles. */
+/** Inicio del administrador del tenant: sus capacidades (solicitudes, técnicos, catálogo, reportes) y cuáles ya están disponibles. */
 @Component({
   selector: 'app-inicio',
   imports: [Insignia, RouterLink],

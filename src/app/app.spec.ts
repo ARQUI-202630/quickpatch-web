@@ -50,13 +50,13 @@ describe('App', () => {
     expect(elemento.querySelector('a.saltar')?.getAttribute('href')).toBe('#contenido');
   });
 
-  it('con sesión de plataforma muestra Tenants, el usuario y permite salir', async () => {
+  it('con sesión de plataforma muestra Solicitudes y Tenants, el usuario y permite salir', async () => {
     const sesion = await iniciarSesion('admin_plataforma', 'Laura Gómez Ruiz');
     const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const { fixture, el } = renderizar();
 
     const enlaces = [...el.querySelectorAll('nav a')].map((a) => a.textContent?.trim());
-    expect(enlaces).toEqual(['Tenants']);
+    expect(enlaces).toEqual(['Solicitudes', 'Tenants']);
     expect(el.querySelector('.nombre')?.textContent).toContain('Laura Gómez Ruiz');
     expect(el.querySelector('.rol')?.textContent).toContain('Administrador de plataforma');
     expect(el.querySelector('.avatar')?.textContent?.trim()).toBe('LG');
@@ -68,12 +68,12 @@ describe('App', () => {
     expect(navegar).toHaveBeenCalledWith(['/iniciar-sesion']);
   });
 
-  it('con sesión de empresa muestra Inicio y Técnicos', async () => {
+  it('con sesión de empresa muestra Inicio, Solicitudes y Técnicos', async () => {
     await iniciarSesion('admin_tenant', 'Pedro');
     const { el } = renderizar();
 
     const enlaces = [...el.querySelectorAll('nav a')].map((a) => a.textContent?.trim());
-    expect(enlaces).toEqual(['Inicio', 'Técnicos']);
+    expect(enlaces).toEqual(['Inicio', 'Solicitudes', 'Técnicos']);
     expect(el.querySelector('.rol')?.textContent).toContain('Administrador de empresa');
     expect(el.querySelector('.avatar')?.textContent?.trim()).toBe('P');
   });

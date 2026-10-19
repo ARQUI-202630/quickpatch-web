@@ -29,6 +29,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/tecnicos/tecnicos').then((m) => m.Tecnicos),
   },
   {
+    path: 'solicitudes',
+    title: 'Solicitudes · QUICKPATCH',
+    canActivate: [requiereRol('admin_tenant', 'admin_plataforma')],
+    loadComponent: () => import('./features/solicitudes/solicitudes').then((m) => m.Solicitudes),
+  },
+  {
     path: 'tenants',
     title: 'Tenants · QUICKPATCH',
     canActivate: [requiereRol('admin_plataforma')],

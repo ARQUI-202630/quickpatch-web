@@ -1,7 +1,15 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 export type NombreIcono =
-  'inicio' | 'tenants' | 'tecnicos' | 'menu' | 'cerrar' | 'salir' | 'buscar';
+  | 'inicio'
+  | 'solicitudes'
+  | 'tenants'
+  | 'tecnicos'
+  | 'menu'
+  | 'cerrar'
+  | 'salir'
+  | 'buscar'
+  | 'copiar';
 
 /**
  * Iconos del panel en SVG propio, con un solo trazo de 1.75 px (basados en Lucide, licencia ISC). Son decorativos:
@@ -37,6 +45,14 @@ export type NombreIcono =
             d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
           />
         }
+        @case ('solicitudes') {
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <path d="M12 11h4" />
+          <path d="M12 16h4" />
+          <path d="M8 11h.01" />
+          <path d="M8 16h.01" />
+        }
         @case ('tenants') {
           <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
           <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
@@ -64,6 +80,10 @@ export type NombreIcono =
         @case ('buscar') {
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.3-4.3" />
+        }
+        @case ('copiar') {
+          <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
         }
         @case ('salir') {
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
