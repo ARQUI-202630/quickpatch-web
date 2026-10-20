@@ -152,7 +152,7 @@ describe('accesibilidad', () => {
     }));
     const { fixture, el } = crear(Tecnicos);
     expect(await infracciones(el)).toEqual([]);
-    http.expectOne('/api/v1/catalog/categories').flush([{ id: 'c1', name: 'Plomería' }]);
+    http.expectOne('/api/v1/service-requests/categories').flush([{ id: 'c1', name: 'Plomería' }]);
     http
       .expectOne((req) => req.url === '/api/v1/admin/technicians')
       .flush({ items: tecnicos, page: 1, size: 20, totalItems: 30 });
@@ -183,7 +183,7 @@ describe('accesibilidad', () => {
     };
     const { fixture, el } = crear(SolicitudesTenant);
     expect(await infracciones(el)).toEqual([]);
-    http.expectOne('/api/v1/catalog/categories').flush([{ id: 'c1', name: 'Plomería' }]);
+    http.expectOne('/api/v1/service-requests/categories').flush([{ id: 'c1', name: 'Plomería' }]);
     http
       .expectOne((req) => req.url === '/api/v1/admin/technicians')
       .flush({
@@ -227,7 +227,7 @@ describe('accesibilidad', () => {
 
   it('diálogo de cancelación de una solicitud con el error del motivo (SCRUM-477)', async () => {
     const { fixture, el } = crear(SolicitudesTenant);
-    http.expectOne('/api/v1/catalog/categories').flush([{ id: 'c1', name: 'Plomería' }]);
+    http.expectOne('/api/v1/service-requests/categories').flush([{ id: 'c1', name: 'Plomería' }]);
     http
       .expectOne((req) => req.url === '/api/v1/admin/technicians')
       .flush({ items: [], page: 1, size: 100, totalItems: 0 });
