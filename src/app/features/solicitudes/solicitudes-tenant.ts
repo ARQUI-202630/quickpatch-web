@@ -117,6 +117,7 @@ export function idCorto(id: string): string {
             <th scope="col">Estado</th>
             <th scope="col">Categoría</th>
             <th scope="col">Cliente</th>
+            <th scope="col">Tipo</th>
             <th scope="col">Técnico</th>
             <th scope="col">Creada</th>
             <th scope="col">Asignada</th>
@@ -129,6 +130,7 @@ export function idCorto(id: string): string {
               <tr class="fila-esqueleto" aria-hidden="true">
                 <td><span class="esqueleto ancho-md"></span></td>
                 <td><span class="esqueleto ancho-md"></span></td>
+                <td><span class="esqueleto ancho-sm"></span></td>
                 <td><span class="esqueleto ancho-sm"></span></td>
                 <td><span class="esqueleto ancho-sm"></span></td>
                 <td><span class="esqueleto ancho-md"></span></td>
@@ -154,6 +156,16 @@ export function idCorto(id: string): string {
                       <app-icono nombre="copiar" [tamano]="16" />
                     </button>
                   </span>
+                </td>
+                <td data-etiqueta="Tipo">
+                  @if (s.clientType === 'empresa') {
+                    <span class="tipo-cliente empresa">Empresa</span>
+                    @if (s.siteName) {
+                      <span class="sede">{{ s.siteName }}</span>
+                    }
+                  } @else {
+                    <span class="tipo-cliente">Hogar</span>
+                  }
                 </td>
                 <td data-etiqueta="Técnico">
                   @if (s.technicianId) {
@@ -200,7 +212,7 @@ export function idCorto(id: string): string {
               </tr>
             } @empty {
               <tr>
-                <td colspan="7">
+                <td colspan="8">
                   <div class="vacio">
                     <strong>{{ textoVacio() }}</strong>
                     <span>Las solicitudes aparecen aquí cuando los clientes las crean.</span>
