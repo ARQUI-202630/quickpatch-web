@@ -311,3 +311,23 @@ textarea {
     justify-content: flex-start;
   }
 }
+
+/* Tipo de cliente (service-request 1.9.0): las solicitudes de empresa se distinguen de las de hogar (SCRUM-28). */
+.tipo-cliente {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--qp-radio-pildora);
+  font-size: var(--qp-texto-xs);
+  background: var(--qp-superficie-sutil);
+
+  &.empresa {
+    background: var(--qp-color-secundario);
+    font-weight: 600;
+  }
+}
+
+.sede {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: var(--qp-texto-xs);
+}
