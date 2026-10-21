@@ -60,6 +60,11 @@ dd {
 .pie {
   margin: 0;
   font-size: var(--qp-texto-sm);
+
+  a {
+    color: var(--qp-lateral-texto);
+    font-weight: var(--qp-peso-semibold);
+  }
 }
 
 .formulario {
