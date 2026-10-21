@@ -10,6 +10,7 @@ import { Sesion } from './core/sesion';
 import { ActivarCuenta } from './features/activacion/activar-cuenta';
 import { InicioSesion } from './features/autenticacion/inicio-sesion';
 import { Inicio } from './features/inicio/inicio';
+import { Presentacion } from './features/presentacion/presentacion';
 import { SolicitudesPlataforma } from './features/solicitudes/solicitudes-plataforma';
 import { SolicitudesTenant } from './features/solicitudes/solicitudes-tenant';
 import { Tecnicos } from './features/tecnicos/tecnicos';
@@ -79,6 +80,11 @@ describe('accesibilidad', () => {
     (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
     fixture.detectChanges();
     expect(el.querySelector('[aria-invalid="true"]')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('página de presentación pública (SCRUM-491)', async () => {
+    const { el } = crear(Presentacion);
     expect(await infracciones(el)).toEqual([]);
   });
 
