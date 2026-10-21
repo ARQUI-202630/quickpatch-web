@@ -78,6 +78,6 @@ export class TecnicosApi {
   }
 
   categorias(): Observable<Categoria[]> {
-    return this.http.get<Categoria[]>(`${this.base}/v1/catalog/categories`);
+    return this.http.get<Categoria[]>(`${this.base}/v1/service-requests/categories`);
   }
 }

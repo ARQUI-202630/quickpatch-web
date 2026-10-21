@@ -71,7 +71,7 @@ describe('Tecnicos', () => {
   async function crear(lista: PaginaTecnicos, conCatalogo = true) {
     const fixture = TestBed.createComponent(Tecnicos);
     fixture.detectChanges();
-    const catalogo = http.expectOne('/api/v1/catalog/categories');
+    const catalogo = http.expectOne('/api/v1/service-requests/categories');
     if (conCatalogo) {
       catalogo.flush([{ id: PLOMERIA, name: 'Plomería' }]);
     } else {
@@ -91,7 +91,7 @@ describe('Tecnicos', () => {
   it('muestra los pendientes del tenant por defecto, con la especialidad y sus acciones', async () => {
     const fixture = TestBed.createComponent(Tecnicos);
     fixture.detectChanges();
-    http.expectOne('/api/v1/catalog/categories').flush([{ id: PLOMERIA, name: 'Plomería' }]);
+    http.expectOne('/api/v1/service-requests/categories').flush([{ id: PLOMERIA, name: 'Plomería' }]);
     const req = listado();
     expect(req.request.method).toBe('GET');
     expect(req.request.params.get('verificationStatus')).toBe('pendiente');
@@ -441,7 +441,7 @@ describe('Tecnicos', () => {
     expect(el.querySelector('table')?.getAttribute('aria-busy')).toBe('true');
     expect(texto(el)).toContain('Cargando técnicos');
 
-    http.expectOne('/api/v1/catalog/categories').flush([]);
+    http.expectOne('/api/v1/service-requests/categories').flush([]);
     listado().flush({ type: `${PROBLEMA}no-autorizado` }, { status: 403, statusText: 'Forbidden' });
     await estable(fixture);
 
