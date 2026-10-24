@@ -3,8 +3,8 @@ import { RouterLink } from '@angular/router';
 
 import { Icono, NombreIcono } from '../../shared/icono';
 
-/** Último APK publicado de la app móvil (release de GitHub del repositorio público quickpatch-mobile). */
-export const DESCARGA_APP = 'https://github.com/ARQUI-202630/quickpatch-mobile/releases/latest';
+/** APK del último release de quickpatch-mobile; el pipeline de la app lo publica como quickpatch.apk (SCRUM-628). */
+export const DESCARGA_APP = 'https://github.com/ARQUI-202630/quickpatch-mobile/releases/latest/download/quickpatch.apk';
 
 interface Elemento {
   icono: NombreIcono;
