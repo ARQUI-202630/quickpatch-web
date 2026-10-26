@@ -64,6 +64,7 @@ jobs:
             salida-pruebas.txt
             coverage
           if-no-files-found: ignore
+          retention-days: 14
 
       - name: Build de producción
         run: npm run build
