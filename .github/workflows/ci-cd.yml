@@ -54,6 +54,18 @@ jobs:
       - name: Cobertura mínima
         run: python3 .github/scripts/cobertura.py texto 80 salida-pruebas.txt
 
+      # SCRUM-602: salida de las pruebas (con su resumen de cobertura) e informe de cobertura, descargables desde la ejecución.
+      - name: Guardar cobertura y resultados de las pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-y-resultados
+          path: |
+            salida-pruebas.txt
+            coverage
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Build de producción
         run: npm run build
 
