@@ -18,12 +18,15 @@ export function requiereRol(...roles: RolAdministrador[]): CanActivateFn {
   };
 }
 
-/** Destino inicial según el rol: el administrador de la plataforma va a los tenants. */
+/**
+ * Raíz del sitio: sin sesión muestra la página de presentación (SCRUM-491); con sesión lleva al panel según el rol,
+ * y el administrador de la plataforma va a los tenants.
+ */
 export const redirigirPorRol: CanActivateFn = () => {
   const sesion = inject(Sesion);
   const router = inject(Router);
   if (!sesion.autenticado()) {
-    return router.createUrlTree(['/iniciar-sesion']);
+    return true;
   }
   return router.createUrlTree([sesion.tieneRol('admin_plataforma') ? '/tenants' : '/inicio']);
 };

@@ -5,7 +5,13 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../core/sesion';
 import { EstadoSolicitud } from '../../shared/estado-solicitud';
 
-/** Esquema `AdminServiceRequest` (service-request.v1.yaml 1.4.0): sin dirección, ubicación ni contacto. */
+/** Tipo de cliente de la solicitud (`ClientType`, service-request 1.9.0, RN-SR12). */
+export type TipoCliente = 'hogar' | 'empresa';
+
+/**
+ * Esquema `AdminServiceRequest` (service-request.v1.yaml 1.4.0): sin dirección, ubicación ni contacto. Desde 1.9.0 trae
+ * `clientType` y la sede de las solicitudes de empresa; un backend anterior no los envía y la solicitud es de hogar.
+ */
 export interface SolicitudAdmin {
   id: string;
   status: EstadoSolicitud;
@@ -14,6 +20,8 @@ export interface SolicitudAdmin {
   technicianId: string | null;
   createdAt: string;
   assignedAt: string | null;
+  clientType?: TipoCliente;
+  siteName?: string | null;
 }
 
 /** Esquema `CancelledServiceRequest` (1.5.0). */

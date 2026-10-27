@@ -165,6 +165,16 @@ tbody tr {
   }
 }
 
+/* Texto solo para lectores de pantalla (por ejemplo, «se abre en una pestaña nueva»). */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ── Marca ─────────────────────────────────────────────────────────────────── */
 .marca {
   display: flex;

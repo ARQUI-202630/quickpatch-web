@@ -40,6 +40,13 @@ export const routes: Routes = [
     canActivate: [requiereRol('admin_plataforma')],
     loadComponent: () => import('./features/tenants/tenants').then((m) => m.Tenants),
   },
-  { path: '', pathMatch: 'full', canActivate: [redirigirPorRol], children: [] },
+  {
+    // Pública: presentación del proyecto (SCRUM-491). Con sesión, el guard lleva al panel.
+    path: '',
+    pathMatch: 'full',
+    title: 'QUICKPATCH · Servicios técnicos para el hogar y las empresas en Bogotá',
+    canActivate: [redirigirPorRol],
+    loadComponent: () => import('./features/presentacion/presentacion').then((m) => m.Presentacion),
+  },
   { path: '**', redirectTo: '' },
 ];

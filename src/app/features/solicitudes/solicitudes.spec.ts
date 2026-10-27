@@ -186,6 +186,24 @@ describe('Solicitudes', () => {
       expect(texto(buscando.querySelector('[data-etiqueta="Categoría"]'))).toBe('—');
     });
 
+    it('distingue las solicitudes de empresa con su sede de las de hogar (SCRUM-28)', async () => {
+      const { el } = await cargado(
+        resumen(),
+        pagina([
+          solicitud('s1', { clientType: 'empresa', siteName: 'Sede Norte' }),
+          solicitud('s2', { clientType: 'hogar' }),
+          solicitud('s3'),
+        ]),
+      );
+      const [empresa, hogar, anterior] = Array.from(el.querySelectorAll('tbody tr'));
+
+      expect(texto(empresa.querySelector('.tipo-cliente.empresa'))).toBe('Empresa');
+      expect(texto(empresa.querySelector('[data-etiqueta="Tipo"] .sede'))).toBe('Sede Norte');
+      expect(texto(hogar.querySelector('[data-etiqueta="Tipo"]'))).toBe('Hogar');
+      // Un backend anterior a la 1.9.0 no envía el tipo: es de hogar.
+      expect(texto(anterior.querySelector('[data-etiqueta="Tipo"]'))).toBe('Hogar');
+    });
+
     it('un técnico que no está en la lista del tenant se muestra con su ID corto', async () => {
       const { el } = await cargado(
         resumen(),
