@@ -67,7 +67,7 @@ export interface ResumenPlataforma {
   tenants: ResumenTenant[];
 }
 
-/** Esquema `Category` (catalog.v1.yaml); solo para mostrar el nombre de la categoría. */
+/** Esquema `CategoryReference` (service-request.v1.yaml 1.8.0, ADR-025); solo para mostrar el nombre de la categoría. */
 export interface Categoria {
   id: string;
   name: string;
@@ -138,7 +138,7 @@ export class SolicitudesApi {
   }
 
   categorias(): Observable<Categoria[]> {
-    return this.http.get<Categoria[]>(`${this.base}/v1/catalog/categories`);
+    return this.http.get<Categoria[]>(`${this.base}/v1/service-requests/categories`);
   }
 
   /** Técnicos y proveedores del tenant, en todos los estados de verificación. */

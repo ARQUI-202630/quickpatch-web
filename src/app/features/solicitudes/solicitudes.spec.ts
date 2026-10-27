@@ -114,7 +114,7 @@ describe('Solicitudes', () => {
       p: PaginaSolicitudes = pagina([solicitud('s1')]),
     ) {
       const { fixture, el } = crear(SolicitudesTenant);
-      http.expectOne('/api/v1/catalog/categories').flush([{ id: PLOMERIA, name: 'Plomería' }]);
+      http.expectOne('/api/v1/service-requests/categories').flush([{ id: PLOMERIA, name: 'Plomería' }]);
       tecnicos().flush(paginaTecnicos([{ userId: TECNICO, fullName: 'Andrés Rojas' }]));
       resumenTenant().flush(r);
       lista().flush(p);
@@ -124,7 +124,7 @@ describe('Solicitudes', () => {
 
     it('pide la primera página sin filtro y nunca envía el tenant', () => {
       crear(SolicitudesTenant);
-      http.expectOne('/api/v1/catalog/categories').flush([]);
+      http.expectOne('/api/v1/service-requests/categories').flush([]);
       tecnicos().flush(paginaTecnicos([]));
       resumenTenant().flush(resumen());
       const req = lista();
@@ -375,7 +375,7 @@ describe('Solicitudes', () => {
 
     it('pide los técnicos de a 100 hasta tenerlos todos', async () => {
       const { fixture, el } = crear(SolicitudesTenant);
-      http.expectOne('/api/v1/catalog/categories').flush([]);
+      http.expectOne('/api/v1/service-requests/categories').flush([]);
       const primera = tecnicos();
       expect(primera.request.params.get('page')).toBe('1');
       expect(primera.request.params.get('size')).toBe('100');
@@ -394,7 +394,7 @@ describe('Solicitudes', () => {
 
     it('sin la lista de técnicos muestra el ID corto y no avisa error', async () => {
       const { fixture, el } = crear(SolicitudesTenant);
-      http.expectOne('/api/v1/catalog/categories').flush([]);
+      http.expectOne('/api/v1/service-requests/categories').flush([]);
       tecnicos().flush({}, { status: 503, statusText: 'Service Unavailable' });
       resumenTenant().flush(resumen());
       lista().flush(pagina([solicitud('s1', { technicianId: TECNICO })]));
@@ -532,7 +532,7 @@ describe('Solicitudes', () => {
 
     it('si la primera carga falla muestra el error', async () => {
       const { fixture, el } = crear(SolicitudesTenant);
-      http.expectOne('/api/v1/catalog/categories').flush([]);
+      http.expectOne('/api/v1/service-requests/categories').flush([]);
       tecnicos().flush(paginaTecnicos([]));
       resumenTenant().flush({}, { status: 403, statusText: 'Forbidden' });
       lista().flush({}, { status: 403, statusText: 'Forbidden' });
@@ -694,7 +694,7 @@ describe('Solicitudes', () => {
       const el = await conRol('admin_tenant');
       expect(el.querySelector('app-solicitudes-tenant')).not.toBeNull();
       expect(el.querySelector('app-solicitudes-plataforma')).toBeNull();
-      http.expectOne('/api/v1/catalog/categories').flush([]);
+      http.expectOne('/api/v1/service-requests/categories').flush([]);
       http
         .expectOne((req) => req.url === '/api/v1/admin/technicians')
         .flush({ items: [], page: 1, size: 100, totalItems: 0 });
