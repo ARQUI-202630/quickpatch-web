@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { mensajeDeError } from '../../core/http';
 import { Sesion } from '../../core/sesion';
@@ -8,7 +8,7 @@ import { Sesion } from '../../core/sesion';
 /** Inicio de sesión de los administradores (RF-03). Contrato: `POST /v1/auth/login`. */
 @Component({
   selector: 'app-inicio-sesion',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   styleUrl: './inicio-sesion.scss',
   template: `
     <div class="acceso">
@@ -26,7 +26,10 @@ import { Sesion } from '../../core/sesion';
             <dd>Técnicos, catálogo de servicios y reportes de tu empresa.</dd>
           </dl>
         </div>
-        <p class="pie">Técnicos y clientes usan la app móvil de QUICKPATCH.</p>
+        <p class="pie">
+          Técnicos y clientes usan la app móvil de QUICKPATCH.
+          <a routerLink="/">Conoce QUICKPATCH</a>
+        </p>
       </section>
 
       <section class="formulario" aria-labelledby="titulo-acceso">

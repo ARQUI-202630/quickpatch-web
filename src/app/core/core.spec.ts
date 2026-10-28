@@ -154,7 +154,8 @@ describe('core', () => {
     expect((ejecutar(requiereRol('admin_plataforma')) as UrlTree).toString()).toBe(
       '/iniciar-sesion',
     );
-    expect((ejecutar(redirigirPorRol) as UrlTree).toString()).toBe('/iniciar-sesion');
+    // Sin sesión la raíz muestra la página de presentación (SCRUM-491).
+    expect(ejecutar(redirigirPorRol)).toBe(true);
 
     await iniciarComo('admin_tenant');
     expect((ejecutar(requiereRol('admin_plataforma')) as UrlTree).toString()).toBe('/inicio');

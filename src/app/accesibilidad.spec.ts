@@ -10,6 +10,9 @@ import { Sesion } from './core/sesion';
 import { ActivarCuenta } from './features/activacion/activar-cuenta';
 import { InicioSesion } from './features/autenticacion/inicio-sesion';
 import { Inicio } from './features/inicio/inicio';
+import { Presentacion } from './features/presentacion/presentacion';
+import { SolicitudesPlataforma } from './features/solicitudes/solicitudes-plataforma';
+import { SolicitudesTenant } from './features/solicitudes/solicitudes-tenant';
 import { Tecnicos } from './features/tecnicos/tecnicos';
 import { TecnicoAdmin } from './features/tecnicos/tecnicos-api';
 import { Tenants } from './features/tenants/tenants';
@@ -77,6 +80,11 @@ describe('accesibilidad', () => {
     (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
     fixture.detectChanges();
     expect(el.querySelector('[aria-invalid="true"]')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('página de presentación pública (SCRUM-491)', async () => {
+    const { el } = crear(Presentacion);
     expect(await infracciones(el)).toEqual([]);
   });
 
@@ -150,7 +158,7 @@ describe('accesibilidad', () => {
     }));
     const { fixture, el } = crear(Tecnicos);
     expect(await infracciones(el)).toEqual([]);
-    http.expectOne('/api/v1/catalog/categories').flush([{ id: 'c1', name: 'Plomería' }]);
+    http.expectOne('/api/v1/service-requests/categories').flush([{ id: 'c1', name: 'Plomería' }]);
     http
       .expectOne((req) => req.url === '/api/v1/admin/technicians')
       .flush({ items: tecnicos, page: 1, size: 20, totalItems: 30 });
@@ -164,6 +172,129 @@ describe('accesibilidad', () => {
     boton(el, 'Sí, rechazar').click();
     fixture.detectChanges();
     expect(el.querySelector('#motivo-error')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('solicitudes del tenant mientras carga, con datos, paginación y filtro (SCRUM-104)', async () => {
+    const conteos = {
+      buscando_tecnico: 4,
+      en_espera: 1,
+      asignado: 6,
+      cotizado: 0,
+      cotizacion_aceptada: 0,
+      en_progreso: 0,
+      completado: 0,
+      pagado: 0,
+      cancelado: 2,
+    };
+    const { fixture, el } = crear(SolicitudesTenant);
+    expect(await infracciones(el)).toEqual([]);
+    http.expectOne('/api/v1/service-requests/categories').flush([{ id: 'c1', name: 'Plomería' }]);
+    http
+      .expectOne((req) => req.url === '/api/v1/admin/technicians')
+      .flush({
+        items: [{ userId: 'tecnico-0', fullName: 'Andrés Rojas' }],
+        page: 1,
+        size: 100,
+        totalItems: 1,
+      });
+    http
+      .expectOne('/api/v1/admin/service-requests/summary')
+      .flush({ generatedAt: '2026-10-18T16:00:00Z', byStatus: conteos, createdToday: 5 });
+    http
+      .expectOne((req) => req.url === '/api/v1/service-requests')
+      .flush({
+        items: Array.from({ length: 20 }, (_, i) => ({
+          id: `s${i}`,
+          status: i % 2 === 0 ? 'asignado' : 'buscando_tecnico',
+          categoryId: 'c1',
+          clientId: `cliente-${i}`,
+          technicianId: i % 2 === 0 ? `tecnico-${i}` : null,
+          createdAt: '2026-10-14T15:02:11Z',
+          assignedAt: i % 2 === 0 ? '2026-10-14T15:04:40Z' : null,
+        })),
+        page: 1,
+        size: 20,
+        totalItems: 30,
+      });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('.paginacion')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+
+    (el.querySelector('button.conteo') as HTMLButtonElement).click();
+    http
+      .expectOne((req) => req.url === '/api/v1/service-requests')
+      .flush({ items: [], page: 1, size: 20, totalItems: 0 });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('diálogo de cancelación de una solicitud con el error del motivo (SCRUM-477)', async () => {
+    const { fixture, el } = crear(SolicitudesTenant);
+    http.expectOne('/api/v1/service-requests/categories').flush([{ id: 'c1', name: 'Plomería' }]);
+    http
+      .expectOne((req) => req.url === '/api/v1/admin/technicians')
+      .flush({ items: [], page: 1, size: 100, totalItems: 0 });
+    http.expectOne('/api/v1/admin/service-requests/summary').flush({
+      generatedAt: '2026-10-18T16:00:00Z',
+      byStatus: {
+        buscando_tecnico: 1,
+        en_espera: 0,
+        asignado: 0,
+        cotizado: 0,
+        cotizacion_aceptada: 0,
+        en_progreso: 0,
+        completado: 0,
+        pagado: 0,
+        cancelado: 0,
+      },
+      createdToday: 1,
+    });
+    http
+      .expectOne((req) => req.url === '/api/v1/service-requests')
+      .flush({
+        items: [
+          {
+            id: 's1',
+            status: 'buscando_tecnico',
+            categoryId: 'c1',
+            clientId: 'cliente-1',
+            technicianId: null,
+            createdAt: '2026-10-14T15:02:11Z',
+            assignedAt: null,
+          },
+        ],
+        page: 1,
+        size: 20,
+        totalItems: 1,
+      });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    (el.querySelector('td.acciones button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    (el.querySelector('dialog button.confirmar') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('#motivo-cancelacion-error')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('conteos de solicitudes por tenant de la plataforma (SCRUM-104)', async () => {
+    const { fixture, el } = crear(SolicitudesPlataforma);
+    expect(await infracciones(el)).toEqual([]);
+    http.expectOne('/api/v1/platform/tenants').flush(tenants);
+    http
+      .expectOne((req) => req.url === '/api/v1/platform/service-requests/summary')
+      .flush({
+        generatedAt: '2026-10-18T16:00:00Z',
+        tenants: [],
+      });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelectorAll('tbody tr')).toHaveLength(2);
     expect(await infracciones(el)).toEqual([]);
   });
 
