@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { mensajeDeError } from '../../core/http';
 import { DialogoConfirmacion } from '../../shared/dialogo-confirmacion';
+import { ErrorCarga } from '../../shared/error-carga';
 import { EstadoVerificacion, EstadoVerificacionInsignia } from '../../shared/estado-verificacion';
 import { AccionVerificacion, TecnicoAdmin, TecnicosApi } from './tecnicos-api';
 
@@ -78,7 +79,7 @@ interface CambioPendiente {
  */
 @Component({
   selector: 'app-tecnicos',
-  imports: [DatePipe, DialogoConfirmacion, EstadoVerificacionInsignia],
+  imports: [DatePipe, DialogoConfirmacion, ErrorCarga, EstadoVerificacionInsignia],
   styleUrl: './tecnicos.scss',
   template: `
     <div class="pagina">
@@ -92,6 +93,9 @@ interface CambioPendiente {
         </div>
       </header>
 
+      @if (errorCarga(); as mensaje) {
+        <app-error-carga [mensaje]="mensaje" (reintentar)="cargar()" />
+      }
       @if (error() && !pendiente()) {
         <p class="alerta" role="alert">{{ error() }}</p>
       }
@@ -182,14 +186,16 @@ interface CambioPendiente {
                   </td>
                 </tr>
               } @empty {
-                <tr>
-                  <td colspan="7">
-                    <div class="vacio">
-                      <strong>{{ textoVacio() }}</strong>
-                      <span>Los técnicos y proveedores aparecen aquí cuando se registran.</span>
-                    </div>
-                  </td>
-                </tr>
+                @if (!errorCarga()) {
+                  <tr>
+                    <td colspan="7">
+                      <div class="vacio">
+                        <strong>{{ textoVacio() }}</strong>
+                        <span>Los técnicos y proveedores aparecen aquí cuando se registran.</span>
+                      </div>
+                    </td>
+                  </tr>
+                }
               }
             }
           </tbody>
@@ -277,6 +283,7 @@ export class Tecnicos implements OnInit {
   protected readonly cargando = signal(true);
   protected readonly guardando = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly errorCarga = signal<string | null>(null);
   protected readonly aviso = signal('');
   protected readonly pendiente = signal<CambioPendiente | null>(null);
   protected readonly motivo = signal('');
@@ -396,8 +403,9 @@ export class Tecnicos implements OnInit {
     }
   }
 
-  private async cargar(): Promise<void> {
+  protected async cargar(): Promise<void> {
     this.cargando.set(true);
+    this.errorCarga.set(null);
     if (!this.pendiente()) {
       this.error.set(null);
     }
@@ -414,7 +422,7 @@ export class Tecnicos implements OnInit {
       this.total.set(resultado.totalItems);
     } catch (e) {
       if (!this.pendiente()) {
-        this.error.set(mensajeDeError(e));
+        this.errorCarga.set(mensajeDeError(e));
       }
     } finally {
       this.cargando.set(false);

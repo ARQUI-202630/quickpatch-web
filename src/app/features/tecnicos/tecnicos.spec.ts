@@ -91,7 +91,9 @@ describe('Tecnicos', () => {
   it('muestra los pendientes del tenant por defecto, con la especialidad y sus acciones', async () => {
     const fixture = TestBed.createComponent(Tecnicos);
     fixture.detectChanges();
-    http.expectOne('/api/v1/service-requests/categories').flush([{ id: PLOMERIA, name: 'Plomería' }]);
+    http
+      .expectOne('/api/v1/service-requests/categories')
+      .flush([{ id: PLOMERIA, name: 'Plomería' }]);
     const req = listado();
     expect(req.request.method).toBe('GET');
     expect(req.request.params.get('verificationStatus')).toBe('pendiente');
@@ -305,6 +307,25 @@ describe('Tecnicos', () => {
     await estable(fixture);
 
     expect(texto(el.querySelector('.aviso'))).toContain('Dani quedó reactivado.');
+  });
+
+  it('si la lista no carga, muestra el error sin el texto de vacío y permite reintentar', async () => {
+    const fixture = TestBed.createComponent(Tecnicos);
+    fixture.detectChanges();
+    http.expectOne('/api/v1/service-requests/categories').flush([]);
+    listado().flush({}, { status: 503, statusText: 'Service Unavailable' });
+    await estable(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelector('[role="alert"]')).not.toBeNull();
+    expect(el.querySelector('.vacio')).toBeNull();
+
+    botones(el, 'Reintentar')[0].click();
+    listado().flush(pagina([tecnico('t1', 'Ana Ruiz', 'pendiente')]));
+    await estable(fixture);
+
+    expect(el.querySelector('[role="alert"]')).toBeNull();
+    expect(texto(el)).toContain('Ana Ruiz');
   });
 
   it('«Todos» no envía el filtro de estado y repetir el filtro actual no recarga', async () => {

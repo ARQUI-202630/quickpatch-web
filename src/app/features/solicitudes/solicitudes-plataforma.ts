@@ -3,6 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { mensajeDeError } from '../../core/http';
+import { ErrorCarga } from '../../shared/error-carga';
 import {
   ESTADOS_ACTIVOS,
   ESTADOS_SOLICITUD,
@@ -34,11 +35,11 @@ const SIN_SOLICITUDES = Object.fromEntries(ESTADOS_SOLICITUD.map((e) => [e, 0]))
  */
 @Component({
   selector: 'app-solicitudes-plataforma',
-  imports: [DatePipe],
+  imports: [DatePipe, ErrorCarga],
   styleUrl: './solicitudes.scss',
   template: `
-    @if (error()) {
-      <p class="alerta" role="alert">{{ error() }}</p>
+    @if (error(); as mensaje) {
+      <app-error-carga [mensaje]="mensaje" (reintentar)="cargar()" />
     }
 
     <section class="tarjeta contenedor-tabla">
@@ -97,13 +98,15 @@ const SIN_SOLICITUDES = Object.fromEntries(ESTADOS_SOLICITUD.map((e) => [e, 0]))
                   <td class="cifra numerico" data-etiqueta="Creadas hoy">{{ f.createdToday }}</td>
                 </tr>
               } @empty {
-                <tr>
-                  <td [attr.colspan]="estados.length + 3">
-                    <div class="vacio">
-                      <strong>No hay tenants para mostrar.</strong>
-                    </div>
-                  </td>
-                </tr>
+                @if (!error()) {
+                  <tr>
+                    <td [attr.colspan]="estados.length + 3">
+                      <div class="vacio">
+                        <strong>No hay tenants para mostrar.</strong>
+                      </div>
+                    </td>
+                  </tr>
+                }
               }
             }
           </tbody>
@@ -177,7 +180,7 @@ export class SolicitudesPlataforma implements OnInit {
     await this.cargar();
   }
 
-  private async cargar(silencioso = false): Promise<void> {
+  protected async cargar(silencioso = false): Promise<void> {
     if (!silencioso) {
       this.cargando.set(true);
     }

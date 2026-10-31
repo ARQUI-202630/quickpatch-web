@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { erroresDeCampo, mensajeDeError, tipoDeError } from '../../core/http';
 import { DialogoConfirmacion } from '../../shared/dialogo-confirmacion';
+import { ErrorCarga } from '../../shared/error-carga';
 import {
   ESTADOS_ACTIVOS,
   ESTADOS_CANCELABLES,
@@ -43,11 +44,11 @@ export function idCorto(id: string): string {
  */
 @Component({
   selector: 'app-solicitudes-tenant',
-  imports: [DatePipe, DialogoConfirmacion, EstadoSolicitudInsignia, Icono],
+  imports: [DatePipe, DialogoConfirmacion, ErrorCarga, EstadoSolicitudInsignia, Icono],
   styleUrl: './solicitudes.scss',
   template: `
-    @if (error()) {
-      <p class="alerta" role="alert">{{ error() }}</p>
+    @if (error(); as mensaje) {
+      <app-error-carga [mensaje]="mensaje" (reintentar)="actualizar()" />
     }
     @if (conflicto()) {
       <p class="alerta" role="alert">{{ conflicto() }}</p>
@@ -211,14 +212,16 @@ export function idCorto(id: string): string {
                 </td>
               </tr>
             } @empty {
-              <tr>
-                <td colspan="8">
-                  <div class="vacio">
-                    <strong>{{ textoVacio() }}</strong>
-                    <span>Las solicitudes aparecen aquí cuando los clientes las crean.</span>
-                  </div>
-                </td>
-              </tr>
+              @if (!errorLista()) {
+                <tr>
+                  <td colspan="8">
+                    <div class="vacio">
+                      <strong>{{ textoVacio() }}</strong>
+                      <span>Las solicitudes aparecen aquí cuando los clientes las crean.</span>
+                    </div>
+                  </td>
+                </tr>
+              }
             }
           }
         </tbody>
@@ -317,7 +320,7 @@ export class SolicitudesTenant implements OnInit {
   protected readonly total = signal(0);
   protected readonly cargando = signal(true);
   private readonly errorResumen = signal<string | null>(null);
-  private readonly errorLista = signal<string | null>(null);
+  protected readonly errorLista = signal<string | null>(null);
   protected readonly error = computed(() => this.errorResumen() ?? this.errorLista());
   protected readonly aviso = signal('');
   private readonly categorias = signal<ReadonlyMap<string, string>>(new Map());
@@ -471,7 +474,7 @@ export class SolicitudesTenant implements OnInit {
   }
 
   /** Actualización periódica: conteos y página actual sin quitar lo que se ve mientras llega. */
-  private async actualizar(): Promise<void> {
+  protected async actualizar(): Promise<void> {
     await Promise.all([this.cargarResumen(), this.cargar(true)]);
   }
 

@@ -114,7 +114,9 @@ describe('Solicitudes', () => {
       p: PaginaSolicitudes = pagina([solicitud('s1')]),
     ) {
       const { fixture, el } = crear(SolicitudesTenant);
-      http.expectOne('/api/v1/service-requests/categories').flush([{ id: PLOMERIA, name: 'Plomería' }]);
+      http
+        .expectOne('/api/v1/service-requests/categories')
+        .flush([{ id: PLOMERIA, name: 'Plomería' }]);
       tecnicos().flush(paginaTecnicos([{ userId: TECNICO, fullName: 'Andrés Rojas' }]));
       resumenTenant().flush(r);
       lista().flush(p);
@@ -530,6 +532,26 @@ describe('Solicitudes', () => {
       expect(el.querySelectorAll('tbody tr')).toHaveLength(1);
     });
 
+    it('si la lista no carga, no dice que está vacía y permite reintentar', async () => {
+      const { fixture, el } = crear(SolicitudesTenant);
+      http.expectOne('/api/v1/service-requests/categories').flush([]);
+      tecnicos().flush(paginaTecnicos([]));
+      resumenTenant().flush(resumen({ asignado: 1 }));
+      lista().flush({}, { status: 503, statusText: 'Service Unavailable' });
+      await estable(fixture);
+
+      expect(el.querySelector('[role="alert"]')).not.toBeNull();
+      expect(el.querySelector('.vacio')).toBeNull();
+
+      boton(el, 'Reintentar').click();
+      resumenTenant().flush(resumen({ asignado: 1 }));
+      lista().flush(pagina([solicitud('s1')]));
+      await estable(fixture);
+
+      expect(el.querySelector('[role="alert"]')).toBeNull();
+      expect(el.querySelectorAll('tbody tr')).toHaveLength(1);
+    });
+
     it('si la primera carga falla muestra el error', async () => {
       const { fixture, el } = crear(SolicitudesTenant);
       http.expectOne('/api/v1/service-requests/categories').flush([]);
@@ -646,6 +668,25 @@ describe('Solicitudes', () => {
       selector.value = '';
       selector.dispatchEvent(new Event('change'));
       expect(resumenPlataforma().request.params.has('tenantId')).toBe(false);
+    });
+
+    it('si los conteos no cargan, no dice que está vacío y permite reintentar', async () => {
+      const { fixture, el } = crear(SolicitudesPlataforma);
+      http.expectOne('/api/v1/platform/tenants').flush({}, { status: 503, statusText: 'x' });
+      resumenPlataforma().flush({}, { status: 503, statusText: 'x' });
+      await estable(fixture);
+
+      expect(el.querySelector('[role="alert"]')).not.toBeNull();
+      expect(el.querySelector('.vacio')).toBeNull();
+
+      boton(el, 'Reintentar').click();
+      resumenPlataforma().flush(
+        plataforma([{ tenantId: ALFA, byStatus: conteos(), createdToday: 0 }]),
+      );
+      await estable(fixture);
+
+      expect(el.querySelector('[role="alert"]')).toBeNull();
+      expect(Array.from(el.querySelectorAll('tbody th')).map(texto)).toEqual([ALFA]);
     });
 
     it('sin la lista de tenants muestra los conteos con el identificador', async () => {
