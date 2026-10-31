@@ -11,6 +11,17 @@ export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL', { factory
 /** Roles con acceso al panel web (DD 11.3: el panel es para administradores). */
 export type RolAdministrador = 'admin_tenant' | 'admin_plataforma';
 
+/** Nombre de cada rol del panel, para el encabezado y el perfil. */
+export const NOMBRE_ROL: Record<RolAdministrador, string> = {
+  admin_plataforma: 'Administrador de plataforma',
+  admin_tenant: 'Administrador de empresa',
+};
+
+/** Nombre del rol o vacío si no es un rol del panel. */
+export function nombreDeRol(rol: string | undefined): string {
+  return rol === 'admin_plataforma' || rol === 'admin_tenant' ? NOMBRE_ROL[rol] : '';
+}
+
 export interface Usuario {
   id: string;
   email: string;
@@ -72,6 +83,17 @@ export class Sesion {
     this.estado.set(guardada);
     Sesion.guardar(guardada);
     return r.user;
+  }
+
+  /** Cambia el nombre del usuario después de editar su perfil (SCRUM-613), sin volver a iniciar sesión. */
+  actualizarNombre(fullName: string): void {
+    const actual = this.estado();
+    if (!actual) {
+      return;
+    }
+    const guardada: SesionGuardada = { ...actual, usuario: { ...actual.usuario, fullName } };
+    this.estado.set(guardada);
+    Sesion.guardar(guardada);
   }
 
   cerrar(): void {
