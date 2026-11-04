@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
 import { redirigirPorRol, requiereRol } from './core/guards';
+// Solo el tipo: la página se sigue cargando bajo demanda.
+import type { MiPerfil } from './features/perfil/perfil';
 
 export const routes: Routes = [
   {
@@ -33,6 +35,14 @@ export const routes: Routes = [
     title: 'Solicitudes · QUICKPATCH',
     canActivate: [requiereRol('admin_tenant', 'admin_plataforma')],
     loadComponent: () => import('./features/solicitudes/solicitudes').then((m) => m.Solicitudes),
+  },
+  {
+    // Perfil propio (SCRUM-613); salir con cambios sin guardar pide confirmación.
+    path: 'perfil',
+    title: 'Mi perfil · QUICKPATCH',
+    canActivate: [requiereRol('admin_tenant', 'admin_plataforma')],
+    canDeactivate: [(pagina: MiPerfil) => pagina.puedeSalir()],
+    loadComponent: () => import('./features/perfil/perfil').then((m) => m.MiPerfil),
   },
   {
     path: 'tenants',

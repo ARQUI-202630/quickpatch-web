@@ -49,13 +49,20 @@
         >
           <app-icono nombre="menu" />
         </button>
-        <div class="usuario">
+        <a
+          class="usuario"
+          routerLink="/perfil"
+          routerLinkActive="activo"
+          ariaCurrentWhenActive="page"
+          title="Editar mi perfil"
+        >
           <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
           <span class="datos">
             <span class="nombre">{{ sesion.usuario()?.fullName }}</span>
             <span class="rol">{{ nombreRol() }}</span>
           </span>
-        </div>
+          <span class="visualmente-oculto">· Editar mi perfil</span>
+        </a>
         <button type="button" class="secundario salir" (click)="salir()">
           <app-icono nombre="salir" [tamano]="18" />
           Cerrar sesión

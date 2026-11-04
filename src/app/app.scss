@@ -108,11 +108,22 @@ $angosto: 56rem;
   background: var(--qp-superficie);
 }
 
+/* Enlace a «Mi perfil» (SCRUM-613). */
 .usuario {
   display: flex;
   align-items: center;
   gap: var(--qp-espacio-3);
   min-width: 0;
+  padding: var(--qp-espacio-1) var(--qp-espacio-2);
+  border-radius: var(--qp-radio-sm);
+  color: var(--qp-texto);
+  text-decoration: none;
+  transition: background-color var(--qp-duracion-rapida) var(--qp-curva-salida);
+
+  &:hover,
+  &.activo {
+    background: var(--qp-superficie-hover);
+  }
 }
 
 .avatar {

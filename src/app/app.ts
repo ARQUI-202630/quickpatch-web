@@ -12,7 +12,7 @@ import {
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, skip } from 'rxjs';
 
-import { RolAdministrador, Sesion } from './core/sesion';
+import { RolAdministrador, Sesion, nombreDeRol } from './core/sesion';
 import { Icono, NombreIcono } from './shared/icono';
 
 interface Enlace {
@@ -34,11 +34,6 @@ const ENLACES: readonly Enlace[] = [
   { ruta: '/tecnicos', etiqueta: 'Técnicos', icono: 'tecnicos', roles: ['admin_tenant'] },
   { ruta: '/tenants', etiqueta: 'Tenants', icono: 'tenants', roles: ['admin_plataforma'] },
 ];
-
-const NOMBRE_ROL: Record<RolAdministrador, string> = {
-  admin_plataforma: 'Administrador de plataforma',
-  admin_tenant: 'Administrador de empresa',
-};
 
 /** Ancho desde el que la barra lateral queda fija (debe coincidir con $angosto en app.scss). */
 const ANCHO_BARRA_FIJA = '(min-width: 56.01rem)';
@@ -68,10 +63,7 @@ export class App {
   protected readonly enlaces = computed(() =>
     ENLACES.filter((e) => this.sesion.tieneRol(...e.roles)),
   );
-  protected readonly nombreRol = computed(() => {
-    const rol = this.sesion.usuario()?.role;
-    return rol === 'admin_plataforma' || rol === 'admin_tenant' ? NOMBRE_ROL[rol] : '';
-  });
+  protected readonly nombreRol = computed(() => nombreDeRol(this.sesion.usuario()?.role));
   protected readonly iniciales = computed(() =>
     (this.sesion.usuario()?.fullName ?? '')
       .split(/\s+/)

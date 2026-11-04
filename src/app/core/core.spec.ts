@@ -17,7 +17,7 @@ import {
   mensajeDeError,
   tipoDeError,
 } from './http';
-import { RolSinAccesoError, Sesion } from './sesion';
+import { RolSinAccesoError, Sesion, nombreDeRol } from './sesion';
 
 function respuestaLogin(role: string, expiresIn = 3600) {
   return {
@@ -83,6 +83,26 @@ describe('core', () => {
     sesion.cerrar();
     expect(sessionStorage.getItem('quickpatch.sesion')).toBeNull();
     expect(sesion.usuario()).toBeNull();
+  });
+
+  it('actualizarNombre cambia el nombre sin tocar el token ni el rol (SCRUM-613)', async () => {
+    sesion.actualizarNombre('Nadie');
+    expect(sesion.usuario()).toBeNull();
+
+    await iniciarComo('admin_tenant');
+    sesion.actualizarNombre('Ana María Admin');
+
+    expect(sesion.usuario()).toEqual({
+      id: 'u1',
+      email: 'admin@quickpatch.co',
+      fullName: 'Ana María Admin',
+      role: 'admin_tenant',
+    });
+    expect(sesion.token()).toBe('token-admin_tenant');
+    const guardada = JSON.parse(sessionStorage.getItem('quickpatch.sesion') ?? '{}');
+    expect(guardada.usuario.fullName).toBe('Ana María Admin');
+    expect(nombreDeRol('admin_tenant')).toBe('Administrador de empresa');
+    expect(nombreDeRol('cliente')).toBe('');
   });
 
   it('agrega el token a la API y no a otros orígenes', async () => {
