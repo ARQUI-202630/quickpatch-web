@@ -80,6 +80,26 @@ describe('Tenants: crear tenant (SCRUM-61)', () => {
     fixture.detectChanges();
   }
 
+  it('si la lista no carga, muestra el error sin el texto de vacío y permite reintentar', async () => {
+    const fixture = TestBed.createComponent(Tenants);
+    fixture.detectChanges();
+    http
+      .expectOne('/api/v1/platform/tenants')
+      .flush({}, { status: 503, statusText: 'Service Unavailable' });
+    await estable(fixture);
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelector('[role="alert"]')).not.toBeNull();
+    expect(el.querySelector('.vacio')).toBeNull();
+
+    boton(el, 'Reintentar').click();
+    http.expectOne('/api/v1/platform/tenants').flush(tenants);
+    await estable(fixture);
+
+    expect(el.querySelector('[role="alert"]')).toBeNull();
+    expect(el.querySelectorAll('tbody tr')).toHaveLength(tenants.length);
+  });
+
   function dialogo(el: HTMLElement): HTMLDialogElement {
     return Array.from(el.querySelectorAll('dialog')).find((d) =>
       texto(d).includes('Nuevo tenant'),

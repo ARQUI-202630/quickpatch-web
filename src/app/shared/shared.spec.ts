@@ -3,11 +3,27 @@ import { TestBed } from '@angular/core/testing';
 
 import { CampoBusqueda, coincide, normalizar } from './campo-busqueda';
 import { DialogoConfirmacion } from './dialogo-confirmacion';
+import { ErrorCarga } from './error-carga';
 import { EstadoVerificacion, EstadoVerificacionInsignia } from './estado-verificacion';
 import { Insignia } from './insignia';
 import { DatoDetalle, TarjetaDetalle } from './tarjeta-detalle';
 
 describe('shared', () => {
+  describe('error de carga', () => {
+    it('anuncia el mensaje y avisa al reintentar', () => {
+      const fixture = TestBed.createComponent(ErrorCarga);
+      fixture.componentRef.setInput('mensaje', 'No pudimos cargar.');
+      let intentos = 0;
+      fixture.componentInstance.reintentar.subscribe(() => intentos++);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+
+      expect(el.querySelector('[role="alert"]')?.textContent).toBe('No pudimos cargar.');
+      el.querySelector('button')?.click();
+      expect(intentos).toBe(1);
+    });
+  });
+
   describe('búsqueda', () => {
     it('normaliza tildes, mayúsculas y espacios', () => {
       expect(normalizar('  Técnico ÁLVAREZ ')).toBe('tecnico alvarez');

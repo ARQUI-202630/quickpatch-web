@@ -12,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
 import { erroresDeCampo, mensajeDeError, tipoDeError } from '../../core/http';
 import { CampoBusqueda, coincide } from '../../shared/campo-busqueda';
 import { DialogoConfirmacion } from '../../shared/dialogo-confirmacion';
+import { ErrorCarga } from '../../shared/error-carga';
 import { Insignia } from '../../shared/insignia';
 import { EstadoTenant, Tenant, TenantsApi } from './tenants-api';
 
@@ -50,7 +51,14 @@ function formatoNit(control: AbstractControl<string>): ValidationErrors | null {
  */
 @Component({
   selector: 'app-tenants',
-  imports: [DatePipe, ReactiveFormsModule, CampoBusqueda, DialogoConfirmacion, Insignia],
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    CampoBusqueda,
+    DialogoConfirmacion,
+    ErrorCarga,
+    Insignia,
+  ],
   styleUrl: './tenants.scss',
   template: `
     <div class="pagina">
@@ -80,6 +88,9 @@ function formatoNit(control: AbstractControl<string>): ValidationErrors | null {
         </div>
       </header>
 
+      @if (errorCarga(); as mensaje) {
+        <app-error-carga [mensaje]="mensaje" (reintentar)="cargar()" />
+      }
       @if (error() && !pendiente() && !creando()) {
         <p class="alerta" role="alert">{{ error() }}</p>
       }
@@ -146,23 +157,25 @@ function formatoNit(control: AbstractControl<string>): ValidationErrors | null {
                   </td>
                 </tr>
               } @empty {
-                <tr>
-                  <td colspan="5">
-                    @if (tenants().length === 0) {
-                      <div class="vacio">
-                        <strong>No hay tenants registrados.</strong>
-                        <span>Crea la primera empresa oferente con «Nuevo tenant».</span>
-                      </div>
-                    } @else {
-                      <div class="vacio">
-                        <strong>Ningún tenant coincide con «{{ consulta() }}».</strong>
-                        <button type="button" class="secundario" (click)="consulta.set('')">
-                          Limpiar búsqueda
-                        </button>
-                      </div>
-                    }
-                  </td>
-                </tr>
+                @if (!errorCarga()) {
+                  <tr>
+                    <td colspan="5">
+                      @if (tenants().length === 0) {
+                        <div class="vacio">
+                          <strong>No hay tenants registrados.</strong>
+                          <span>Crea la primera empresa oferente con «Nuevo tenant».</span>
+                        </div>
+                      } @else {
+                        <div class="vacio">
+                          <strong>Ningún tenant coincide con «{{ consulta() }}».</strong>
+                          <button type="button" class="secundario" (click)="consulta.set('')">
+                            Limpiar búsqueda
+                          </button>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
               }
             }
           </tbody>
@@ -265,6 +278,7 @@ export class Tenants implements OnInit {
   protected readonly cargando = signal(true);
   protected readonly guardando = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly errorCarga = signal<string | null>(null);
   protected readonly pendiente = signal<CambioPendiente | null>(null);
   protected readonly creando = signal(false);
   protected readonly aviso = signal('');
@@ -311,10 +325,16 @@ export class Tenants implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    await this.cargar();
+  }
+
+  protected async cargar(): Promise<void> {
+    this.cargando.set(true);
+    this.errorCarga.set(null);
     try {
       this.tenants.set(await firstValueFrom(this.api.listar()));
     } catch (e) {
-      this.error.set(mensajeDeError(e));
+      this.errorCarga.set(mensajeDeError(e));
     } finally {
       this.cargando.set(false);
     }
