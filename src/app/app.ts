@@ -32,6 +32,12 @@ const ENLACES: readonly Enlace[] = [
     roles: ['admin_tenant', 'admin_plataforma'],
   },
   { ruta: '/tecnicos', etiqueta: 'Técnicos', icono: 'tecnicos', roles: ['admin_tenant'] },
+  {
+    ruta: '/recuperaciones',
+    etiqueta: 'Recuperar contraseñas',
+    icono: 'candado',
+    roles: ['admin_tenant'],
+  },
   { ruta: '/tenants', etiqueta: 'Tenants', icono: 'tenants', roles: ['admin_plataforma'] },
 ];
 

@@ -19,6 +19,13 @@ export const routes: Routes = [
       import('./features/activacion/activar-cuenta').then((m) => m.ActivarCuenta),
   },
   {
+    // Pública: el usuario abre aquí el enlace de recuperación que le entregó el administrador (SCRUM-626).
+    path: 'recuperar',
+    title: 'Contraseña nueva · QUICKPATCH',
+    loadComponent: () =>
+      import('./features/recuperacion/recuperar-contrasena').then((m) => m.RecuperarContrasena),
+  },
+  {
     path: 'inicio',
     title: 'Inicio · QUICKPATCH',
     canActivate: [requiereRol('admin_tenant', 'admin_plataforma')],
@@ -29,6 +36,14 @@ export const routes: Routes = [
     title: 'Técnicos · QUICKPATCH',
     canActivate: [requiereRol('admin_tenant')],
     loadComponent: () => import('./features/tecnicos/tecnicos').then((m) => m.Tecnicos),
+  },
+  {
+    // Solicitudes de recuperación de contraseña del tenant (SCRUM-626).
+    path: 'recuperaciones',
+    title: 'Recuperar contraseñas · QUICKPATCH',
+    canActivate: [requiereRol('admin_tenant')],
+    loadComponent: () =>
+      import('./features/recuperacion/recuperaciones').then((m) => m.Recuperaciones),
   },
   {
     path: 'solicitudes',
