@@ -11,6 +11,8 @@ import { ActivarCuenta } from './features/activacion/activar-cuenta';
 import { InicioSesion } from './features/autenticacion/inicio-sesion';
 import { Inicio } from './features/inicio/inicio';
 import { Presentacion } from './features/presentacion/presentacion';
+import { Recuperaciones } from './features/recuperacion/recuperaciones';
+import { RecuperarContrasena } from './features/recuperacion/recuperar-contrasena';
 import { SolicitudesPlataforma } from './features/solicitudes/solicitudes-plataforma';
 import { SolicitudesTenant } from './features/solicitudes/solicitudes-tenant';
 import { Tecnicos } from './features/tecnicos/tecnicos';
@@ -172,6 +174,40 @@ describe('accesibilidad', () => {
     boton(el, 'Sí, rechazar').click();
     fixture.detectChanges();
     expect(el.querySelector('#motivo-error')).not.toBeNull();
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('recuperar contraseñas con datos, paginación y el enlace generado (SCRUM-626)', async () => {
+    const { fixture, el } = crear(Recuperaciones);
+    expect(await infracciones(el)).toEqual([]);
+    http
+      .expectOne((req) => req.url === '/api/v1/admin/password-recovery-requests')
+      .flush({
+        items: Array.from({ length: 20 }, (_, i) => ({
+          id: `r${i}`,
+          userId: `u${i}`,
+          email: `u${i}@correo.co`,
+          fullName: `Usuario ${i}`,
+          role: 'cliente',
+          requestedAt: '2026-10-29T14:00:00Z',
+        })),
+        page: 1,
+        size: 20,
+        totalItems: 25,
+      });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(await infracciones(el)).toEqual([]);
+
+    (el.querySelector('td.acciones button') as HTMLButtonElement).click();
+    http.expectOne('/api/v1/admin/password-recovery-requests/r0/link').flush({
+      link: 'https://quickpatch.internal/recuperar#token=Rk3pX2q9ZbT7vW1sYc8nLm4dHa6uJe0oQi5gNt-yUfB',
+      token: 'Rk3pX2q9ZbT7vW1sYc8nLm4dHa6uJe0oQi5gNt-yUfB',
+      expiresAt: '2026-10-29T15:00:00Z',
+    });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('#enlace')).not.toBeNull();
     expect(await infracciones(el)).toEqual([]);
   });
 
@@ -365,6 +401,47 @@ describe('accesibilidad de activar cuenta', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(el.textContent).toContain('Tu cuenta quedó activa');
+    expect(await infracciones(el)).toEqual([]);
+  });
+
+  it('contraseña nueva: formulario con errores y enlace inválido (SCRUM-626)', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { fragment: 'token=Rk3pX2q9ZbT7vW1sYc8nLm4dHa6uJe0oQi5gNt-yUfB' } },
+        },
+      ],
+    });
+    http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(RecuperarContrasena);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(await infracciones(el)).toEqual([]);
+
+    (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+    expect(el.querySelectorAll('[aria-invalid="true"]').length).toBe(2);
+    expect(await infracciones(el)).toEqual([]);
+
+    for (const id of ['password', 'confirmacion']) {
+      const input = el.querySelector(`#${id}`) as HTMLInputElement;
+      input.value = 'Nueva.2026';
+      input.dispatchEvent(new Event('input'));
+    }
+    (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    http
+      .expectOne('/api/v1/auth/password-recovery/confirm')
+      .flush(
+        { type: 'https://quickpatch.internal/problems/enlace-invalido', status: 400 },
+        { status: 400, statusText: 'Bad Request' },
+      );
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Este enlace ya no sirve');
     expect(await infracciones(el)).toEqual([]);
   });
 

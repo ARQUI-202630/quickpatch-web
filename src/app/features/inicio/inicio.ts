@@ -24,6 +24,11 @@ const CAPACIDADES: readonly Capacidad[] = [
     ruta: '/tecnicos',
   },
   {
+    titulo: 'Recuperar contraseñas',
+    detalle: 'Generar el enlace para que un usuario que olvidó su contraseña defina una nueva.',
+    ruta: '/recuperaciones',
+  },
+  {
     titulo: 'Catálogo de servicios',
     detalle: 'Categorías y servicios que ofrece tu empresa.',
   },
