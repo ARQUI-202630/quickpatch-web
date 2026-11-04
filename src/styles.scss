@@ -1,0 +1,324 @@
+/* Estilos globales del panel administrativo. Todos los valores salen de los tokens (styles/_tokens.scss). */
+@use '@fontsource-variable/plus-jakarta-sans';
+@use 'styles/tokens';
+@use 'styles/base';
+
+.tarjeta {
+  max-width: var(--qp-ancho-contenido);
+  margin: 0 auto;
+  padding: var(--qp-espacio-6);
+  border: 1px solid var(--qp-borde);
+  border-radius: var(--qp-radio-md);
+  background: var(--qp-superficie);
+  box-shadow: var(--qp-sombra-sm);
+}
+
+form {
+  display: grid;
+  gap: var(--qp-espacio-2);
+  max-width: 24rem;
+}
+
+label {
+  font-size: var(--qp-texto-sm);
+  font-weight: var(--qp-peso-medio);
+}
+
+input {
+  min-height: var(--qp-alto-control);
+  padding: var(--qp-espacio-2) var(--qp-espacio-3);
+  border: 1px solid var(--qp-borde-fuerte);
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-superficie);
+  color: var(--qp-texto);
+  font: inherit;
+  transition: border-color var(--qp-duracion-rapida) var(--qp-curva-salida);
+
+  &:hover {
+    border-color: var(--qp-borde-fuerte-hover);
+  }
+
+  &:focus-visible {
+    border-color: var(--qp-foco);
+    outline-offset: 0;
+  }
+
+  &.ng-invalid.ng-touched,
+  &[aria-invalid='true'] {
+    border-color: var(--qp-peligro);
+  }
+
+  &::placeholder {
+    color: var(--qp-texto-secundario);
+  }
+}
+
+button {
+  min-height: var(--qp-alto-control);
+  padding: var(--qp-espacio-2) var(--qp-espacio-4);
+  border: none;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-color-primario);
+  color: var(--qp-texto-sobre-primario);
+  font: inherit;
+  font-size: var(--qp-texto-sm);
+  font-weight: var(--qp-peso-semibold);
+  cursor: pointer;
+  transition:
+    background-color var(--qp-duracion-rapida) var(--qp-curva-salida),
+    transform var(--qp-duracion-rapida) var(--qp-curva-salida);
+
+  &:hover:not(:disabled) {
+    background: var(--qp-color-primario-hover);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--qp-color-primario-activo);
+    transform: scale(0.98);
+  }
+
+  &.secundario {
+    background: var(--qp-color-secundario);
+    color: var(--qp-texto-marca);
+
+    &:hover:not(:disabled) {
+      background: var(--qp-color-secundario-hover);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--qp-texto-sm);
+}
+
+caption {
+  padding-bottom: var(--qp-espacio-3);
+  text-align: left;
+  color: var(--qp-texto-secundario);
+}
+
+th,
+td {
+  padding: var(--qp-espacio-3);
+  border-bottom: 1px solid var(--qp-borde);
+  text-align: left;
+}
+
+th {
+  background: var(--qp-superficie-sutil);
+  color: var(--qp-texto-secundario);
+  font-weight: var(--qp-peso-semibold);
+}
+
+tbody tr {
+  transition: background-color var(--qp-duracion-rapida) var(--qp-curva-salida);
+
+  &:hover {
+    background: var(--qp-superficie-hover);
+  }
+}
+
+.error,
+.error-campo {
+  color: var(--qp-peligro);
+}
+
+.error-campo {
+  margin: 0;
+  font-size: var(--qp-texto-sm);
+}
+
+.nota {
+  color: var(--qp-texto-secundario);
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* ── Piezas del shell reutilizables (SCRUM-435) ──────────────────────────── */
+.saltar {
+  position: absolute;
+  top: var(--qp-espacio-2);
+  left: var(--qp-espacio-2);
+  z-index: 50;
+  padding: var(--qp-espacio-2) var(--qp-espacio-4);
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-superficie);
+  box-shadow: var(--qp-sombra-md);
+  font-weight: var(--qp-peso-semibold);
+  transform: translateY(-200%);
+
+  &:focus-visible {
+    transform: none;
+  }
+}
+
+/* Texto solo para lectores de pantalla (por ejemplo, «se abre en una pestaña nueva»). */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Marca ─────────────────────────────────────────────────────────────────── */
+.marca {
+  display: flex;
+  align-items: center;
+  gap: var(--qp-espacio-3);
+
+  h1 {
+    display: grid;
+    margin: 0;
+    font-size: var(--qp-texto-md);
+    font-weight: var(--qp-peso-bold);
+    letter-spacing: 0.02em;
+    line-height: var(--qp-interlineado-titulo);
+
+    span {
+      font-size: var(--qp-texto-xs);
+      font-weight: var(--qp-peso-medio);
+      letter-spacing: 0;
+    }
+  }
+}
+
+.sello {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-color-primario);
+  color: var(--qp-texto-sobre-primario);
+  font-size: var(--qp-texto-lg);
+  font-weight: var(--qp-peso-bold);
+}
+
+/* ── Botón solo con icono ─────────────────────────────────────────────────── */
+.boton-icono {
+  display: inline-grid;
+  place-items: center;
+  width: var(--qp-alto-control);
+  padding: 0;
+  background: transparent;
+  color: inherit;
+
+  &:hover:not(:disabled) {
+    background: var(--qp-superficie-hover);
+  }
+}
+
+/* ── Patrones de página (SCRUM-436) ───────────────────────────────────────── */
+.pagina {
+  display: grid;
+  gap: var(--qp-espacio-6);
+  max-width: var(--qp-ancho-contenido);
+  margin: 0 auto;
+}
+
+.pagina > .tarjeta {
+  max-width: none;
+  margin: 0;
+}
+
+.encabezado-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--qp-espacio-4);
+
+  h2 {
+    margin-bottom: var(--qp-espacio-1);
+  }
+
+  p {
+    margin: 0;
+    color: var(--qp-texto-secundario);
+  }
+}
+
+button.peligro {
+  background: var(--qp-peligro);
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    background: color-mix(in oklch, var(--qp-peligro), black 15%);
+  }
+}
+
+button.secundario.peligro {
+  background: var(--qp-peligro-fondo);
+  color: var(--qp-peligro);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--qp-peligro-fondo), var(--qp-peligro) 10%);
+  }
+}
+
+.alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qp-espacio-3);
+  margin: 0;
+  padding: var(--qp-espacio-3) var(--qp-espacio-4);
+  border: 1px solid currentColor;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-peligro-fondo);
+  color: var(--qp-peligro);
+  font-size: var(--qp-texto-sm);
+}
+
+.vacio {
+  display: grid;
+  justify-items: center;
+  gap: var(--qp-espacio-2);
+  padding: var(--qp-espacio-10) var(--qp-espacio-4);
+  color: var(--qp-texto-secundario);
+  text-align: center;
+
+  strong {
+    color: var(--qp-texto);
+  }
+}
+
+.esqueleto {
+  display: block;
+  height: 0.875rem;
+  border-radius: var(--qp-radio-sm);
+  background: linear-gradient(
+      90deg,
+      var(--qp-neutro-100) 0%,
+      var(--qp-neutro-50) 50%,
+      var(--qp-neutro-100) 100%
+    )
+    0 0 / 200% 100%;
+  animation: qp-brillo 1.4s ease-in-out infinite;
+}
+
+@keyframes qp-brillo {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto {
+    animation: none;
+  }
+}

@@ -1,0 +1,86 @@
+/* Mi perfil (SCRUM-613). */
+.volver {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--qp-espacio-2);
+  padding: var(--qp-espacio-1) var(--qp-espacio-2);
+  background: transparent;
+  color: var(--qp-texto-marca);
+
+  &:hover:not(:disabled) {
+    background: var(--qp-superficie-hover);
+  }
+
+  /* El ícono «flecha» apunta a la derecha. */
+  app-icono {
+    transform: scaleX(-1);
+  }
+}
+
+.aviso {
+  margin: 0;
+  padding: var(--qp-espacio-3) var(--qp-espacio-4);
+  border: 1px solid currentColor;
+  border-radius: var(--qp-radio-sm);
+  background: var(--qp-exito-fondo);
+  color: var(--qp-exito);
+  font-size: var(--qp-texto-sm);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.fijos {
+  display: grid;
+  gap: var(--qp-espacio-3);
+  margin: 0 0 var(--qp-espacio-6);
+  padding-bottom: var(--qp-espacio-6);
+  border-bottom: 1px solid var(--qp-borde);
+
+  div {
+    display: grid;
+    grid-template-columns: 6rem 1fr;
+    gap: var(--qp-espacio-4);
+  }
+
+  dt {
+    color: var(--qp-texto-secundario);
+    font-size: var(--qp-texto-sm);
+  }
+
+  dd {
+    display: flex;
+    align-items: center;
+    gap: var(--qp-espacio-2);
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+
+    app-icono {
+      flex-shrink: 0;
+      color: var(--qp-texto-secundario);
+    }
+  }
+}
+
+form {
+  gap: var(--qp-espacio-4);
+}
+
+.campo {
+  display: grid;
+  gap: var(--qp-espacio-1);
+}
+
+form > button {
+  justify-self: start;
+}
+
+@media (max-width: 30rem) {
+  .fijos div {
+    grid-template-columns: 1fr;
+    gap: var(--qp-espacio-1);
+  }
+}
