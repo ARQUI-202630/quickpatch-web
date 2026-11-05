@@ -18,6 +18,7 @@ import {
   tipoDeError,
 } from './http';
 import { RolSinAccesoError, Sesion, nombreDeRol } from './sesion';
+import { contrasenaDe, esperarCifrada, KEY_ID } from './cifrado.testing';
 
 function respuestaLogin(role: string, expiresIn = 3600) {
   return {
@@ -51,8 +52,13 @@ describe('core', () => {
 
   async function iniciarComo(role: string, expiresIn = 3600) {
     const promesa = sesion.iniciar(' admin@quickpatch.co ', 'secreta');
-    const req = http.expectOne('/api/v1/auth/login');
-    expect(req.request.body).toEqual({ email: 'admin@quickpatch.co', password: 'secreta' });
+    const req = await esperarCifrada(http, '/api/v1/auth/login');
+    expect(req.request.body).toEqual({
+      email: 'admin@quickpatch.co',
+      encryptedPassword: expect.any(Object),
+    });
+    expect(req.request.body.encryptedPassword.keyId).toBe(KEY_ID);
+    expect(await contrasenaDe(req)).toBe('secreta');
     expect(req.request.headers.has('X-Correlation-Id')).toBe(true);
     expect(req.request.headers.has('Authorization')).toBe(false);
     req.flush(respuestaLogin(role, expiresIn));

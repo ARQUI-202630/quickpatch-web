@@ -8,6 +8,7 @@ import { InicioSesion } from './autenticacion/inicio-sesion';
 import { Inicio } from './inicio/inicio';
 import { Tenants } from './tenants/tenants';
 import { Tenant } from './tenants/tenants-api';
+import { esperarCifrada } from '../core/cifrado.testing';
 
 const tenants: Tenant[] = [
   { id: 't1', name: 'Alfa', nit: '900', status: 'activo', createdAt: '2026-10-01T00:00:00Z' },
@@ -268,7 +269,7 @@ describe('features', () => {
       password.dispatchEvent(new Event('input'));
 
       (pagina.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
-      http.expectOne('/api/v1/auth/login').flush({
+      (await esperarCifrada(http, '/api/v1/auth/login')).flush({
         accessToken: 't',
         tokenType: 'Bearer',
         expiresIn: 3600,
@@ -296,12 +297,10 @@ describe('features', () => {
       password.dispatchEvent(new Event('input'));
 
       (pagina.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
-      http
-        .expectOne('/api/v1/auth/login')
-        .flush(
-          { type: 'https://quickpatch.internal/problems/credenciales-invalidas' },
-          { status: 401, statusText: 'Unauthorized' },
-        );
+      (await esperarCifrada(http, '/api/v1/auth/login')).flush(
+        { type: 'https://quickpatch.internal/problems/credenciales-invalidas' },
+        { status: 401, statusText: 'Unauthorized' },
+      );
       await fixture.whenStable();
       fixture.detectChanges();
 
@@ -314,7 +313,7 @@ describe('features', () => {
   it('Inicio saluda al administrador del tenant', async () => {
     const sesion = TestBed.inject(Sesion);
     const promesa = sesion.iniciar('admin@quickpatch.co', 'x');
-    http.expectOne('/api/v1/auth/login').flush({
+    (await esperarCifrada(http, '/api/v1/auth/login')).flush({
       accessToken: 't',
       tokenType: 'Bearer',
       expiresIn: 3600,

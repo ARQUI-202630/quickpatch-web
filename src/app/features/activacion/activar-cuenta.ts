@@ -16,7 +16,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 
 import { erroresDeCampo, mensajeDeError, tipoDeError } from '../../core/http';
 import { ActivacionApi, tokenDeFragmento } from './activacion-api';
@@ -206,9 +205,7 @@ export class ActivarCuenta {
     this.enviando.set(true);
     this.error.set(null);
     try {
-      await firstValueFrom(
-        this.api.definirContrasena(this.token, this.formulario.getRawValue().password),
-      );
+      await this.api.definirContrasena(this.token, this.formulario.getRawValue().password);
       this.mostrarResultado('activada');
     } catch (e) {
       const tipo = tipoDeError(e);

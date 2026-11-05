@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
-
+import { CifradoContrasena } from '../../core/cifrado';
 import { API_BASE_URL } from '../../core/sesion';
 
 /**
@@ -18,9 +17,15 @@ export function tokenDeFragmento(fragmento: string | null): string | null {
 export class ActivacionApi {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL);
+  private readonly cifrado = inject(CifradoContrasena);
 
-  /** `POST /v1/auth/password/setup`: el token va en el cuerpo, nunca en la URL. Responde 204. */
-  definirContrasena(token: string, password: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/v1/auth/password/setup`, { token, password });
+  /**
+   * `POST /v1/auth/password/setup`: el token va en el cuerpo, nunca en la URL, y la contraseña cifrada (identity
+   * 1.11.0). Responde 204.
+   */
+  definirContrasena(token: string, password: string): Promise<void> {
+    return this.cifrado.enviar(password, (encryptedPassword) =>
+      this.http.post<void>(`${this.base}/v1/auth/password/setup`, { token, encryptedPassword }),
+    );
   }
 }
