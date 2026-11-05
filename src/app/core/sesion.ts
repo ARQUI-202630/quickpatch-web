@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, InjectionToken, computed, inject, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+
+import { CifradoContrasena } from './cifrado';
 
 /**
  * Prefijo del API Gateway. El panel se sirve en el mismo nombre que la API (`quickpatch.internal`), así que basta la
@@ -59,17 +60,21 @@ export class RolSinAccesoError extends Error {
 export class Sesion {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL);
+  private readonly cifrado = inject(CifradoContrasena);
   private readonly estado = signal<SesionGuardada | null>(Sesion.cargar());
 
   readonly usuario = computed(() => this.estado()?.usuario ?? null);
   readonly autenticado = computed(() => this.vigente() !== null);
 
-  /** `POST /v1/auth/login` (identity.v1.yaml). Rechaza roles que no son de administración. */
+  /**
+   * `POST /v1/auth/login` (identity.v1.yaml), con la contraseña cifrada (1.11.0). Rechaza roles que no son de
+   * administración.
+   */
   async iniciar(email: string, password: string): Promise<Usuario> {
-    const r = await firstValueFrom(
+    const r = await this.cifrado.enviar(password, (encryptedPassword) =>
       this.http.post<RespuestaLogin>(`${this.base}/v1/auth/login`, {
         email: email.trim(),
-        password,
+        encryptedPassword,
       }),
     );
     if (r.user.role !== 'admin_tenant' && r.user.role !== 'admin_plataforma') {

@@ -16,7 +16,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 
 import { erroresDeCampo, mensajeDeError, tipoDeError } from '../../core/http';
 import { tokenDeFragmento } from '../activacion/activacion-api';
@@ -211,7 +210,7 @@ export class RecuperarContrasena {
     this.enviando.set(true);
     this.error.set(null);
     try {
-      await firstValueFrom(this.api.confirmar(this.token, this.formulario.getRawValue().password));
+      await this.api.confirmar(this.token, this.formulario.getRawValue().password);
       this.mostrarResultado('cambiada');
     } catch (e) {
       const tipo = tipoDeError(e);

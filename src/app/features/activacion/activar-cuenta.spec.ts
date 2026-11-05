@@ -7,6 +7,7 @@ import { ActivatedRoute, provideRouter } from '@angular/router';
 
 import { tokenDeFragmento } from './activacion-api';
 import { ActivarCuenta } from './activar-cuenta';
+import { contrasenaDe, esperarCifrada } from '../../core/cifrado.testing';
 
 const TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJ012-_56';
 const PROBLEMA = 'https://quickpatch.internal/problems/';
@@ -117,9 +118,10 @@ describe('ActivarCuenta (SCRUM-463)', () => {
     escribir(fixture, 'confirmacion', 'Equipo.2026');
     enviar(fixture);
 
-    const req = http.expectOne(RUTA);
+    const req = await esperarCifrada(http, RUTA);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ token: TOKEN, password: 'Equipo.2026' });
+    expect(req.request.body).toEqual({ token: TOKEN, encryptedPassword: expect.any(Object) });
+    expect(await contrasenaDe(req)).toBe('Equipo.2026');
     expect(req.request.urlWithParams).not.toContain(TOKEN);
     expect(texto(el.querySelector('button[type="submit"]'))).toBe('Activando…');
     req.flush(null, { status: 204, statusText: 'No Content' });
@@ -136,12 +138,10 @@ describe('ActivarCuenta (SCRUM-463)', () => {
     escribir(fixture, 'password', 'Equipo.2026');
     escribir(fixture, 'confirmacion', 'Equipo.2026');
     enviar(fixture);
-    http
-      .expectOne(RUTA)
-      .flush(
-        { type: `${PROBLEMA}enlace-invalido`, title: 'Enlace inválido', status: 400 },
-        { status: 400, statusText: 'Bad Request' },
-      );
+    (await esperarCifrada(http, RUTA)).flush(
+      { type: `${PROBLEMA}enlace-invalido`, title: 'Enlace inválido', status: 400 },
+      { status: 400, statusText: 'Bad Request' },
+    );
     await estable(fixture);
 
     expect(texto(el.querySelector('h1'))).toBe('Este enlace ya no sirve');
@@ -153,7 +153,7 @@ describe('ActivarCuenta (SCRUM-463)', () => {
     escribir(fixture, 'password', 'Equipo.2026');
     escribir(fixture, 'confirmacion', 'Equipo.2026');
     enviar(fixture);
-    http.expectOne(RUTA).flush(
+    (await esperarCifrada(http, RUTA)).flush(
       {
         type: `${PROBLEMA}validacion`,
         title: 'Validación',
@@ -177,32 +177,26 @@ describe('ActivarCuenta (SCRUM-463)', () => {
     escribir(fixture, 'confirmacion', 'Equipo.2026');
 
     enviar(fixture);
-    http
-      .expectOne(RUTA)
-      .flush(
-        { type: `${PROBLEMA}tenant-inactivo`, title: 'Inactivo', status: 403 },
-        { status: 403, statusText: 'Forbidden' },
-      );
+    (await esperarCifrada(http, RUTA)).flush(
+      { type: `${PROBLEMA}tenant-inactivo`, title: 'Inactivo', status: 403 },
+      { status: 403, statusText: 'Forbidden' },
+    );
     await estable(fixture);
     expect(texto(el.querySelector('[role="alert"]'))).toBe('La empresa está inactiva.');
 
     enviar(fixture);
-    http
-      .expectOne(RUTA)
-      .flush(
-        { type: `${PROBLEMA}canal-sin-tenant`, title: 'Sin tenant', status: 503 },
-        { status: 503, statusText: 'Service Unavailable' },
-      );
+    (await esperarCifrada(http, RUTA)).flush(
+      { type: `${PROBLEMA}canal-sin-tenant`, title: 'Sin tenant', status: 503 },
+      { status: 503, statusText: 'Service Unavailable' },
+    );
     await estable(fixture);
     expect(texto(el.querySelector('[role="alert"]'))).toContain('no está disponible');
 
     enviar(fixture);
-    http
-      .expectOne(RUTA)
-      .flush(
-        { type: `${PROBLEMA}validacion`, title: 'Validación', status: 400, errors: {} },
-        { status: 400, statusText: 'Bad Request' },
-      );
+    (await esperarCifrada(http, RUTA)).flush(
+      { type: `${PROBLEMA}validacion`, title: 'Validación', status: 400, errors: {} },
+      { status: 400, statusText: 'Bad Request' },
+    );
     await estable(fixture);
     expect(texto(el.querySelector('[role="alert"]'))).toBe('Revisa los datos enviados.');
     expect((el.querySelector('#password') as HTMLInputElement).value).toBe('Equipo.2026');

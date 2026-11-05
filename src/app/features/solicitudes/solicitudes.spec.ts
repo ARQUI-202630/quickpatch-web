@@ -17,6 +17,7 @@ import {
 } from './solicitudes-api';
 import { SolicitudesPlataforma } from './solicitudes-plataforma';
 import { SolicitudesTenant } from './solicitudes-tenant';
+import { esperarCifrada } from '../../core/cifrado.testing';
 
 const PLOMERIA = 'c0000000-0000-0000-0000-000000000001';
 const CLIENTE = '2b8f6c1e-4d3a-4e5b-9c7d-1a2b3c4d5e6f';
@@ -721,7 +722,7 @@ describe('Solicitudes', () => {
     async function conRol(rol: 'admin_tenant' | 'admin_plataforma') {
       const sesion = TestBed.inject(Sesion);
       const promesa = sesion.iniciar('admin@quickpatch.co', 'x');
-      http.expectOne('/api/v1/auth/login').flush({
+      (await esperarCifrada(http, '/api/v1/auth/login')).flush({
         accessToken: 't',
         tokenType: 'Bearer',
         expiresIn: 3600,
