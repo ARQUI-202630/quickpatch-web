@@ -231,3 +231,14 @@ textarea {
     display: none;
   }
 }
+
+.calificacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--qp-espacio-1) var(--qp-espacio-2);
+}
+
+.filtro-reputacion {
+  margin-left: auto;
+}

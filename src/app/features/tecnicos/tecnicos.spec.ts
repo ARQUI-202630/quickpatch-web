@@ -341,6 +341,52 @@ describe('Tecnicos', () => {
     expect(texto(el)).toContain('No hay técnicos ni proveedores registrados.');
   });
 
+  it('muestra la calificación y señala la reputación baja sin ofrecer otra acción (AC9-E2)', async () => {
+    const bajo = {
+      ...tecnico('b1', 'Beto Gil', 'aprobado'),
+      averageRating: 2.4,
+      ratingCount: 6,
+      lowReputation: true,
+    };
+    const bueno = {
+      ...tecnico('b2', 'Carla Díaz', 'aprobado'),
+      averageRating: 4.8,
+      ratingCount: 9,
+    };
+    const nuevo = { ...tecnico('b3', 'Dora Paz', 'aprobado'), averageRating: null, ratingCount: 0 };
+    const { el } = await crear(pagina([bajo, bueno, nuevo]));
+
+    const filas = Array.from(el.querySelectorAll('tbody tr'));
+    expect(texto(filas[0])).toContain('2,4');
+    expect(texto(filas[0])).toContain('(6)');
+    expect(texto(filas[0])).toContain('Reputación baja');
+    expect(texto(filas[1])).toContain('4,8');
+    expect(texto(filas[1])).not.toContain('Reputación baja');
+    expect(texto(filas[2])).toContain('Sin calificaciones');
+    // Señalar no suspende: el técnico con reputación baja tiene las mismas acciones que cualquier aprobado.
+    expect(botones(filas[0] as HTMLElement, 'Suspender').length).toBe(1);
+  });
+
+  it('el filtro de reputación baja envía lowReputation, se combina con el estado y vuelve a la primera página', async () => {
+    const { fixture, el } = await crear(pagina([]));
+
+    botones(el, 'Reputación baja')[0].click();
+    const req = listado();
+    expect(req.request.params.get('lowReputation')).toBe('true');
+    expect(req.request.params.get('verificationStatus')).toBe('pendiente');
+    expect(req.request.params.get('page')).toBe('1');
+    req.flush(pagina([]));
+    await estable(fixture);
+    expect(botones(el, 'Reputación baja')[0].getAttribute('aria-pressed')).toBe('true');
+    expect(texto(el)).toContain('Ningún técnico pendiente tiene reputación baja.');
+
+    botones(el, 'Reputación baja')[0].click();
+    const sinFiltro = listado();
+    expect(sinFiltro.request.params.has('lowReputation')).toBe(false);
+    sinFiltro.flush(pagina([]));
+    await estable(fixture);
+  });
+
   it('un 409 se muestra en el diálogo y recarga la lista con las acciones vigentes', async () => {
     const { fixture, el } = await crear(pagina([tecnico('a1', 'Ana Ruiz', 'pendiente')]));
 
