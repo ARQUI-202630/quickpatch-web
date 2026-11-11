@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../core/sesion';
 import { EstadoVerificacion } from '../../shared/estado-verificacion';
 
-/** Esquema `AdminTechnician` (identity.v1.yaml 1.3.0). */
+/** Esquema `AdminTechnician` (identity.v1.yaml 1.3.0; reputación desde 1.12.0, SCRUM-642). */
 export interface TecnicoAdmin {
   userId: string;
   fullName: string;
@@ -17,6 +17,11 @@ export interface TecnicoAdmin {
   verificationStatus: EstadoVerificacion;
   verificationReason?: string | null;
   createdAt: string;
+  /** Promedio con un decimal que calcula Ranking (ADR-027); `null` sin calificaciones. */
+  averageRating?: number | null;
+  ratingCount?: number;
+  /** Promedio menor a 3.0 con al menos 5 calificaciones (AC9-E2). Solo señala: no suspende. */
+  lowReputation?: boolean;
 }
 
 /** Esquema `TechnicianPage`. */
@@ -56,10 +61,14 @@ export class TecnicosApi {
     estado: EstadoVerificacion | null,
     pagina: number,
     tamano: number,
+    soloReputacionBaja = false,
   ): Observable<PaginaTecnicos> {
     let params = new HttpParams().set('page', pagina).set('size', tamano);
     if (estado) {
       params = params.set('verificationStatus', estado);
+    }
+    if (soloReputacionBaja) {
+      params = params.set('lowReputation', true);
     }
     return this.http.get<PaginaTecnicos>(`${this.base}/v1/admin/technicians`, { params });
   }

@@ -7,6 +7,7 @@ import { mensajeDeError } from '../../core/http';
 import { DialogoConfirmacion } from '../../shared/dialogo-confirmacion';
 import { ErrorCarga } from '../../shared/error-carga';
 import { EstadoVerificacion, EstadoVerificacionInsignia } from '../../shared/estado-verificacion';
+import { Insignia } from '../../shared/insignia';
 import { AccionVerificacion, TecnicoAdmin, TecnicosApi } from './tecnicos-api';
 
 interface Filtro {
@@ -79,7 +80,7 @@ interface CambioPendiente {
  */
 @Component({
   selector: 'app-tecnicos',
-  imports: [DatePipe, DialogoConfirmacion, ErrorCarga, EstadoVerificacionInsignia],
+  imports: [DatePipe, DialogoConfirmacion, ErrorCarga, EstadoVerificacionInsignia, Insignia],
   styleUrl: './tecnicos.scss',
   template: `
     <div class="pagina">
@@ -88,7 +89,7 @@ interface CambioPendiente {
           <h2>Técnicos</h2>
           <p>
             Técnicos y proveedores de tu empresa. Solo los aprobados reciben solicitudes de
-            servicio.
+            servicio. La reputación baja solo los señala: suspender sigue siendo tu decisión.
           </p>
         </div>
       </header>
@@ -113,6 +114,14 @@ interface CambioPendiente {
               {{ f.etiqueta }}
             </button>
           }
+          <button
+            type="button"
+            class="filtro filtro-reputacion"
+            [attr.aria-pressed]="soloReputacionBaja()"
+            (click)="alternarReputacionBaja()"
+          >
+            Reputación baja
+          </button>
         </div>
         <table [attr.aria-busy]="cargando()">
           <caption class="oculto">
@@ -127,6 +136,7 @@ interface CambioPendiente {
               <th scope="col">Documento</th>
               <th scope="col">Especialidad</th>
               <th scope="col">Estado</th>
+              <th scope="col">Calificación</th>
               <th scope="col">Registro</th>
               <th scope="col"><span class="oculto">Acciones</span></th>
             </tr>
@@ -139,6 +149,7 @@ interface CambioPendiente {
                   <td><span class="esqueleto ancho-sm"></span></td>
                   <td><span class="esqueleto ancho-md"></span></td>
                   <td><span class="esqueleto ancho-md"></span></td>
+                  <td><span class="esqueleto ancho-sm"></span></td>
                   <td><span class="esqueleto ancho-sm"></span></td>
                   <td><span class="esqueleto ancho-md"></span></td>
                   <td></td>
@@ -161,6 +172,21 @@ interface CambioPendiente {
                       <app-estado-verificacion [estado]="t.verificationStatus" />
                       @if (t.verificationReason) {
                         <span class="secundario motivo">{{ t.verificationReason }}</span>
+                      }
+                    </span>
+                  </td>
+                  <td data-etiqueta="Calificación">
+                    <span class="calificacion">
+                      @if (t.averageRating !== null && t.averageRating !== undefined) {
+                        <span class="numerico"
+                          >{{ promedio(t.averageRating) }}
+                          <span class="secundario">({{ t.ratingCount ?? 0 }})</span></span
+                        >
+                      } @else {
+                        <span class="secundario">Sin calificaciones</span>
+                      }
+                      @if (t.lowReputation) {
+                        <app-insignia tono="peligro">Reputación baja</app-insignia>
                       }
                     </span>
                   </td>
@@ -188,7 +214,7 @@ interface CambioPendiente {
               } @empty {
                 @if (!errorCarga()) {
                   <tr>
-                    <td colspan="7">
+                    <td colspan="8">
                       <div class="vacio">
                         <strong>{{ textoVacio() }}</strong>
                         <span>Los técnicos y proveedores aparecen aquí cuando se registran.</span>
@@ -277,6 +303,7 @@ export class Tecnicos implements OnInit {
   protected readonly motivoMax = MOTIVO_MAX;
 
   protected readonly estado = signal<EstadoVerificacion | null>('pendiente');
+  protected readonly soloReputacionBaja = signal(false);
   protected readonly pagina = signal(1);
   protected readonly tecnicos = signal<TecnicoAdmin[]>([]);
   protected readonly total = signal(0);
@@ -304,11 +331,16 @@ export class Tecnicos implements OnInit {
   protected readonly tituloTabla = computed(
     () => `Técnicos y proveedores: ${this.filtroActual().etiqueta.toLowerCase()}`,
   );
-  protected readonly textoVacio = computed(() =>
-    this.estado() === null
+  protected readonly textoVacio = computed(() => {
+    if (this.soloReputacionBaja()) {
+      return this.estado() === null
+        ? 'Ningún técnico tiene reputación baja.'
+        : `Ningún técnico ${this.filtroActual().etiqueta.toLowerCase().replace(/s$/, '')} tiene reputación baja.`;
+    }
+    return this.estado() === null
       ? 'No hay técnicos ni proveedores registrados.'
-      : `No hay técnicos ${this.filtroActual().etiqueta.toLowerCase()}.`,
-  );
+      : `No hay técnicos ${this.filtroActual().etiqueta.toLowerCase()}.`;
+  });
   protected readonly pideMotivo = computed(() => {
     const accion = this.pendiente()?.accion.accion;
     return accion === 'reject' || accion === 'suspend';
@@ -344,6 +376,19 @@ export class Tecnicos implements OnInit {
     this.pagina.set(1);
     this.aviso.set('');
     await this.cargar();
+  }
+
+  /** Se combina con el filtro de estado (identity 1.12.0, AC9-E2). */
+  async alternarReputacionBaja(): Promise<void> {
+    this.soloReputacionBaja.update((v) => !v);
+    this.pagina.set(1);
+    this.aviso.set('');
+    await this.cargar();
+  }
+
+  /** Promedio con un decimal y coma decimal, como se muestra en Colombia. */
+  protected promedio(valor: number): string {
+    return valor.toFixed(1).replace('.', ',');
   }
 
   async irA(pagina: number): Promise<void> {
@@ -411,7 +456,7 @@ export class Tecnicos implements OnInit {
     }
     try {
       const resultado = await firstValueFrom(
-        this.api.listar(this.estado(), this.pagina(), TAMANO_PAGINA),
+        this.api.listar(this.estado(), this.pagina(), TAMANO_PAGINA, this.soloReputacionBaja()),
       );
       // Si la acción vació la última página, se vuelve a la anterior.
       if (resultado.items.length === 0 && this.pagina() > 1 && resultado.totalItems > 0) {
