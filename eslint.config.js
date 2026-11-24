@@ -33,6 +33,41 @@ module.exports = defineConfig([
       ],
     },
   },
+  // Capas del panel (features/README.md, SDD 10.3.1; SCRUM-713): una feature no importa otra, y core/ y shared/ no
+  // importan de features/. Lo que usan varias features va en core/ (sin pantallas) o en shared/ (componentes).
+  {
+    // Solo dentro de cada feature: features/features.spec.ts, en la raíz, sí puede importar ../core.
+    files: ['src/app/features/*/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^\\.\\./(?!\\.\\./)',
+              message: 'Una feature no importa otra: lo compartido va en core/ o shared/.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/app/core/**/*.ts', 'src/app/shared/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '(^|/)features/',
+              message: 'core/ y shared/ no importan de features/.',
+            },
+          ],
+        },
+      ],
+    },
+  },
   {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
