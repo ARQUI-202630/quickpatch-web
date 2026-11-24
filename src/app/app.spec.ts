@@ -5,18 +5,17 @@ import { Router, provideRouter } from '@angular/router';
 
 import { App } from './app';
 import { Sesion } from './core/sesion';
+import { esperarCifrada } from './core/cifrado.testing';
 
 async function iniciarSesion(role: string, fullName: string): Promise<Sesion> {
   const sesion = TestBed.inject(Sesion);
   const promesa = sesion.iniciar('admin@quickpatch.co', 'x');
-  TestBed.inject(HttpTestingController)
-    .expectOne('/api/v1/auth/login')
-    .flush({
-      accessToken: 't',
-      tokenType: 'Bearer',
-      expiresIn: 3600,
-      user: { id: 'u', email: 'admin@quickpatch.co', fullName, role },
-    });
+  (await esperarCifrada(TestBed.inject(HttpTestingController), '/api/v1/auth/login')).flush({
+    accessToken: 't',
+    tokenType: 'Bearer',
+    expiresIn: 3600,
+    user: { id: 'u', email: 'admin@quickpatch.co', fullName, role },
+  });
   await promesa;
   return sesion;
 }

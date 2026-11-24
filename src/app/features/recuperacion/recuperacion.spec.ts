@@ -9,6 +9,7 @@ import { vi } from 'vitest';
 import { SolicitudRecuperacion } from './recuperacion-api';
 import { Recuperaciones } from './recuperaciones';
 import { RecuperarContrasena } from './recuperar-contrasena';
+import { contrasenaDe, esperarCifrada } from '../../core/cifrado.testing';
 
 const TOKEN = 'Rk3pX2q9ZbT7vW1sYc8nLm4dHa6uJe0oQi5gNt-yUfB';
 const PROBLEMA = 'https://quickpatch.internal/problems/';
@@ -113,9 +114,10 @@ describe('RecuperarContrasena (SCRUM-626)', () => {
     const { fixture, el } = crear(`token=${TOKEN}`);
     definir(fixture, 'Nueva.2026');
 
-    const req = http.expectOne(CONFIRMAR);
+    const req = await esperarCifrada(http, CONFIRMAR);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ token: TOKEN, password: 'Nueva.2026' });
+    expect(req.request.body).toEqual({ token: TOKEN, encryptedPassword: expect.any(Object) });
+    expect(await contrasenaDe(req)).toBe('Nueva.2026');
     expect(req.request.urlWithParams).not.toContain(TOKEN);
     expect(texto(el.querySelector('button[type="submit"]'))).toBe('Guardando…');
     req.flush(null, { status: 204, statusText: 'No Content' });
@@ -130,7 +132,7 @@ describe('RecuperarContrasena (SCRUM-626)', () => {
   it('un enlace usado, vencido o anulado (400) muestra el enlace inválido', async () => {
     const { fixture, el } = crear(`token=${TOKEN}`);
     definir(fixture, 'Nueva.2026');
-    http.expectOne(CONFIRMAR).flush(...problema('enlace-invalido', 400));
+    (await esperarCifrada(http, CONFIRMAR)).flush(...problema('enlace-invalido', 400));
     await estable(fixture);
 
     expect(texto(el.querySelector('h1'))).toBe('Este enlace ya no sirve');
@@ -140,7 +142,7 @@ describe('RecuperarContrasena (SCRUM-626)', () => {
   it('el 400 de la contraseña queda debajo del campo y se borra al editarla', async () => {
     const { fixture, el } = crear(`token=${TOKEN}`);
     definir(fixture, 'Nueva.2026');
-    http.expectOne(CONFIRMAR).flush(
+    (await esperarCifrada(http, CONFIRMAR)).flush(
       {
         type: `${PROBLEMA}validacion`,
         title: 'Validación',
@@ -161,7 +163,7 @@ describe('RecuperarContrasena (SCRUM-626)', () => {
   it('un 403 de tenant inactivo se muestra como alerta sin perder lo escrito', async () => {
     const { fixture, el } = crear(`token=${TOKEN}`);
     definir(fixture, 'Nueva.2026');
-    http.expectOne(CONFIRMAR).flush(...problema('tenant-inactivo', 403));
+    (await esperarCifrada(http, CONFIRMAR)).flush(...problema('tenant-inactivo', 403));
     await estable(fixture);
 
     expect(texto(el.querySelector('[role="alert"]'))).toBe('La empresa está inactiva.');

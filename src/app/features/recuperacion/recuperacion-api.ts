@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { CifradoContrasena } from '../../core/cifrado';
 import { API_BASE_URL } from '../../core/sesion';
 
 /** Esquema `PasswordRecoveryPending` (identity.v1.yaml 1.10.0). No lleva ningún token. */
@@ -40,6 +41,7 @@ export interface EnlaceRecuperacion {
 export class RecuperacionApi {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL);
+  private readonly cifrado = inject(CifradoContrasena);
 
   /** `GET /v1/admin/password-recovery-requests`: pendientes del tenant, de la más antigua a la más reciente. */
   pendientes(pagina: number, tamano: number): Observable<PaginaRecuperaciones> {
@@ -57,11 +59,16 @@ export class RecuperacionApi {
     );
   }
 
-  /** `POST /v1/auth/password-recovery/confirm`: sin sesión; el token va en el cuerpo, nunca en la URL. 204. */
-  confirmar(token: string, password: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/v1/auth/password-recovery/confirm`, {
-      token,
-      password,
-    });
+  /**
+   * `POST /v1/auth/password-recovery/confirm`: sin sesión; el token va en el cuerpo, nunca en la URL, y la contraseña
+   * cifrada (identity 1.11.0). 204.
+   */
+  confirmar(token: string, password: string): Promise<void> {
+    return this.cifrado.enviar(password, (encryptedPassword) =>
+      this.http.post<void>(`${this.base}/v1/auth/password-recovery/confirm`, {
+        token,
+        encryptedPassword,
+      }),
+    );
   }
 }

@@ -19,6 +19,7 @@ import { Tecnicos } from './features/tecnicos/tecnicos';
 import { TecnicoAdmin } from './features/tecnicos/tecnicos-api';
 import { Tenants } from './features/tenants/tenants';
 import { Tenant } from './features/tenants/tenants-api';
+import { esperarCifrada } from './core/cifrado.testing';
 
 /*
  * Regresión de accesibilidad (SCRUM-438): axe-core revisa cada pantalla con las reglas WCAG 2.2 A y AA (nombres
@@ -337,7 +338,7 @@ describe('accesibilidad', () => {
   it('shell con sesión y con el menú deslizable abierto', async () => {
     const sesion = TestBed.inject(Sesion);
     const promesa = sesion.iniciar('admin@quickpatch.co', 'x');
-    http.expectOne('/api/v1/auth/login').flush({
+    (await esperarCifrada(http, '/api/v1/auth/login')).flush({
       accessToken: 't',
       tokenType: 'Bearer',
       expiresIn: 3600,
@@ -395,9 +396,10 @@ describe('accesibilidad de activar cuenta', () => {
       input.dispatchEvent(new Event('input'));
     }
     (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
-    http
-      .expectOne('/api/v1/auth/password/setup')
-      .flush(null, { status: 204, statusText: 'No Content' });
+    (await esperarCifrada(http, '/api/v1/auth/password/setup')).flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
     await fixture.whenStable();
     fixture.detectChanges();
     expect(el.textContent).toContain('Tu cuenta quedó activa');
@@ -433,12 +435,10 @@ describe('accesibilidad de activar cuenta', () => {
       input.dispatchEvent(new Event('input'));
     }
     (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
-    http
-      .expectOne('/api/v1/auth/password-recovery/confirm')
-      .flush(
-        { type: 'https://quickpatch.internal/problems/enlace-invalido', status: 400 },
-        { status: 400, statusText: 'Bad Request' },
-      );
+    (await esperarCifrada(http, '/api/v1/auth/password-recovery/confirm')).flush(
+      { type: 'https://quickpatch.internal/problems/enlace-invalido', status: 400 },
+      { status: 400, statusText: 'Bad Request' },
+    );
     await fixture.whenStable();
     fixture.detectChanges();
     expect(el.textContent).toContain('Este enlace ya no sirve');
