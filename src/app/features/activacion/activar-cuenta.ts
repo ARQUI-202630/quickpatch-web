@@ -18,7 +18,8 @@ import {
 import { ActivatedRoute } from '@angular/router';
 
 import { erroresDeCampo, mensajeDeError, tipoDeError } from '../../core/http';
-import { ActivacionApi, tokenDeFragmento } from './activacion-api';
+import { tokenDeFragmento } from '../../core/enlaces';
+import { ActivacionApi } from './activacion-api';
 
 type Estado = 'formulario' | 'activada' | 'invalido';
 
